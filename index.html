@@ -212,50 +212,66 @@
 </div>
 
 <div class="card">
-            <h3>시장 공포 및 변동성 (Weekly Trend)</h3>
- 
-            <!-- Put/Call 비율 -->
-            <div style="margin-bottom: 25px; position: relative;">
-                <div class="sub-data" style="margin-bottom: 10px;">옵션 풋/콜 비율 (USI:PCC) — <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" style="color:#4b91ff; font-size:0.8rem;">CNN Fear & Greed ↗</a></div>
-                <div class="tradingview-widget-container">
-                    <div class="tradingview-widget-container__widget"></div>
-                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
-                    {"symbol":"USI:PCC","width":"100%","height":"150","locale":"kr","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":false}
-                    </script>
-                </div>
-            </div>
- 
-            <!-- ★ VIX 수치 + 클릭 시 Yahoo Finance VIX 페이지 이동 -->
-            <div>
-                <div class="sub-data" style="margin-bottom: 10px;">
-                    VIX (S&P 500 변동성 지수)
-                    <span class="vix-badge">클릭 시 차트 이동</span>
-                </div>
- 
-                <a class="vix-link-box"
-                   href="https://finance.yahoo.com/quote/%5EVIX/"
-                   target="_blank"
-                   title="Yahoo Finance — VIX 상세 차트">
-                    <div style="display: flex; align-items: center; justify-content: space-between;
-                                padding: 20px; background-color: #3b4252; border-radius: 8px;
-                                border: 1px solid #4c566a;">
-                        <div>
-                            <div class="sub-data" style="color: #d8dee9; margin-bottom: 5px;">▶ 현재 지수</div>
-                            <div id="vix-price" style="font-size: 2.2rem; font-weight: bold; color: #e5e9f0;">통신중...</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div class="sub-data" style="color: #888; margin-bottom: 5px;">전일 대비</div>
-                            <div id="vix-change" style="font-size: 1.2rem; font-weight: bold; color: #a3be8c;">--</div>
-                            <div style="margin-top: 8px; font-size: 0.75rem; color: #4b91ff; opacity: 0.7;">↗ 상세 차트</div>
-                        </div>
-                    </div>
-                </a>
-            </div>
+    <h3>시장 공포 및 변동성 (Weekly Trend)</h3>
+
+    <div style="margin-bottom: 25px; position: relative;">
+        <div class="sub-data" style="margin-bottom: 10px;">옵션 풋/콜 비율 (USI:PCC) — <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" style="color:#4b91ff; font-size:0.8rem;">CNN Fear & Greed ↗</a></div>
+        <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+            {"symbol":"USI:PCC","width":"100%","height":"150","locale":"kr","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":false}
+            </script>
         </div>
+    </div>
+
+    <div>
+        <div class="sub-data" style="margin-bottom: 10px;">
+            VIX (S&P 500 변동성 지수)
+            <span class="vix-badge">클릭 시 차트 이동</span>
+        </div>
+
+        <a class="vix-link-box"
+           href="https://finance.yahoo.com/quote/%5EVIX/"
+           target="_blank"
+           title="Yahoo Finance — VIX 상세 차트">
+            <div style="display: flex; align-items: center; justify-content: space-between;
+                        padding: 20px; background-color: #3b4252; border-radius: 8px;
+                        border: 1px solid #4c566a;">
+                <div>
+                    <div class="sub-data" style="color: #d8dee9; margin-bottom: 5px;">▶ 현재 지수</div>
+                    <div id="vix-price" style="font-size: 2.2rem; font-weight: bold; color: #e5e9f0;">통신중...</div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="sub-data" style="color: #888; margin-bottom: 5px;">전일 대비</div>
+                    <div id="vix-change" style="font-size: 1.2rem; font-weight: bold; color: #a3be8c;">--</div>
+                    <div style="margin-top: 8px; font-size: 0.75rem; color: #4b91ff; opacity: 0.7;">↗ 상세 차트</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div style="margin-top: 20px; padding: 15px; background-color: #2e3440; border: 1px solid #4c566a; border-radius: 8px; font-size: 0.9rem; color: #d8dee9; line-height: 1.7;">
+        <div style="color: #88c0d0; font-weight: bold; margin-bottom: 10px; font-size: 1rem;">■ 실시간 매매 판단 가이드 (역발상 전략)</div>
+        
+        <div style="background-color: #3b4252; padding: 10px; border-radius: 5px; margin-bottom: 12px;">
+            <span style="color: #ff4b4b; font-weight: bold;">▶ 적극 매수 구간 (남들 던질 때 줍는 자리)</span><br>
+            → 조건: <span style="color: #eceff4;">PCC 1.0 이상 + VIX 20 이상</span><br>
+            → 판단: 대중의 공포가 극에 달한 시점, 지수 ETF 분할 매수 가동
+        </div>
+        
+        <div style="background-color: #3b4252; padding: 10px; border-radius: 5px;">
+            <span style="color: #4b91ff; font-weight: bold;">▶ 매도 및 주의 구간 (모두가 환호하는 자리)</span><br>
+            → 조건: <span style="color: #eceff4;">PCC 0.7 이하 + VIX 15 이하</span><br>
+            → 판단: 시장 과열 및 조정 가능성 상존, 고점 분할 매도 고려
+        </div>
+    </div>
+</div>
+
 
 <div class="card" style="grid-column: span 1;">
             <h3>미국 핵심 ETF (SOXL / SOXX) RSI 지표</h3>
-            
+            <div class="sub-data" style="margin-top: -10px; margin-bottom: 15px; color: #888;">웰더스 방식 RSI (Wilder's Smoothing)</div>
+
             <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 10px;">
                 <div style="height: 250px;">
                     <div class="sub-data" style="margin-bottom: 5px;">SOXL 가격 흐름 및 하단 RSI (14) 수치</div>
@@ -771,6 +787,8 @@ async function fetchEconomicCalendar() {
 
 fetchEconomicCalendar();
 setInterval(fetchEconomicCalendar, 300000); // 5분마다 갱신
+
+
 
 </script>
 </body>

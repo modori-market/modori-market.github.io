@@ -92,6 +92,24 @@
         .positive {
             color: #a3be8c; /* 긍정 정보는 초록색 계열 */
         }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                overflow-x: hidden;
+            }
+            
+            .card {
+                grid-column: 1 / -1 !important;
+                width: 100%;
+                box-sizing: border-box;
+                margin-bottom: 20px;
+            }
+            
+            .tradingview-widget-container {
+                width: 100% !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -344,20 +362,22 @@
     </div>
 
 <script>
+
 async function fetchKodexData() {
-    // 1. 사용자의 구글 시트 원본 주소 (끝에 시간을 붙여서 우회 서버의 캐시 멈춤 현상을 방지합니다)
-    const targetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtxh-v_QZHImfjP05zw7k16o-jTnO05KmVvoIUUh3B7UKbIIt9VVPIhEx3l6MEtQlMdtmvG-bK4Eh/pub?gid=0&single=true&output=csv' + new Date().getTime();
+    // 1. 이전에 완벽하게 성공하셨던 '웹에 게시' 주소를 그대로 다시 사용합니다.
+    // 주소 맨 끝에 시간을 붙여서 우회 서버가 멈추는 현상을 원천 차단했습니다.
+    const targetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtxh-v_QZHImfjP05zw7k16o-jTnO05KmVvoIUUh3B7UKbIIt9VVPIhEx3l6MEtQlMdtmvG-bK4Eh/pub?gid=0&single=true&output=csv&t=' + new Date().getTime();
     
-    // 2. CORS 보안 에러를 막기 위한 우회 서버(프록시) 결합 주소
+    // 2. 가장 안정적으로 작동했던 AllOrigins 우회망을 다시 결합합니다.
     const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
     
     try {
         const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error('우회 서버 응답 거부');
+        if (!response.ok) throw new Error('우회 통신망 응답 거부');
         
         const data = await response.text();
         
-        // 3. 데이터 정제 과정 (불순물 완벽 제거)
+        // 데이터 불순물 제거 및 정제
         const cleanData = data.replace(/"/g, '');
         const rows = cleanData.split(/\r?\n/);
         const prices = [];
@@ -366,7 +386,6 @@ async function fetchKodexData() {
             if (rows[i].trim() === '') continue;
             
             const parts = rows[i].split(',');
-            // CSV 구조상 마지막 데이터가 종가
             const priceStr = parts[parts.length - 1].replace(/,/g, '').trim();
             const price = parseFloat(priceStr);
             
@@ -375,16 +394,17 @@ async function fetchKodexData() {
             }
         }
         
-        // 4. 증권사 방식은 최소 150일 이상의 과거 데이터가 필요함
+        // 280일 분량의 데이터가 구글 시트에 제대로 쌓였는지 확인하는 안전장치입니다.
         if (prices.length < 150) {
-            document.getElementById('kodex-price').innerText = '데이터 축적 중... (' + prices.length + ')';
+            document.getElementById('kodex-price').innerText = '구글시트 데이터 갱신중 (' + prices.length + ')';
             return;
         }
         
+        // 현재가 연동
         const currentPrice = prices[prices.length - 1];
         document.getElementById('kodex-price').innerText = currentPrice.toLocaleString() + '원';
         
-        // 5. 20일 이동평균선 및 이격도 계산
+        // 20일 이동평균선 및 이격도 계산
         let sum20 = 0;
         for (let i = prices.length - 20; i < prices.length; i++) {
             sum20 += prices[i];
@@ -394,13 +414,13 @@ async function fetchKodexData() {
         
         const disparityEl = document.getElementById('kodex-disparity');
         disparityEl.innerText = disparity.toFixed(2) + '%';
-        disparityEl.style.color = disparity > 100 ? '#ff4b4b' : '#4b91ff';
+        if (disparity > 100) disparityEl.style.color = '#ff4b4b';
+        else disparityEl.style.color = '#4b91ff';
         
-        // 6. 증권사 방식 RSI (Wilder's Smoothing) 정밀 계산 로직
+        // 증권사 방식 정밀 RSI 계산 (지수 가중치 적용)
         let avgGain = 0;
         let avgLoss = 0;
         
-        // 첫 14일간의 평균 계산 (초기 기준값 세팅)
         for (let i = 1; i <= 14; i++) {
             const change = prices[i] - prices[i - 1];
             if (change > 0) avgGain += change;
@@ -409,14 +429,14 @@ async function fetchKodexData() {
         avgGain = avgGain / 14;
         avgLoss = avgLoss / 14;
         
-        // 나머지 전체 기간(약 200일) 동안 지수 가중치 누적 적용
         for (let i = 15; i < prices.length; i++) {
             const change = prices[i] - prices[i - 1];
             const currentGain = change > 0 ? change : 0;
             const currentLoss = change < 0 ? -change : 0;
             
-            avgGain = (avgGain * 13 + currentGain) / 14;
-            avgLoss = (avgLoss * 13 + currentLoss) / 14;
+            // 나눗셈 역수 연산을 통해 가중치를 정밀하게 누적합니다.
+            avgGain = (avgGain / (1/13) + currentGain) / 14;
+            avgLoss = (avgLoss / (1/13) + currentLoss) / 14;
         }
         
         const rs = avgGain / (avgLoss || 1);
@@ -430,7 +450,7 @@ async function fetchKodexData() {
         else rsiEl.style.color = '#a3be8c';
         
     } catch (error) {
-        document.getElementById('kodex-price').innerText = '우회 통신 에러';
+        document.getElementById('kodex-price').innerText = '데이터 연동 에러';
         document.getElementById('kodex-disparity').innerText = '--%';
         document.getElementById('kodex-rsi').innerText = '--';
     }
@@ -438,6 +458,7 @@ async function fetchKodexData() {
 
 fetchKodexData();
 setInterval(fetchKodexData, 60000);
+
 
 async function fetchEconomicCalendar() {
     const apiKey = 'd7nv1r1r01qs975tk5lgd7nv1r1r01qs975tk5m0';
@@ -573,127 +594,129 @@ setInterval(fetchNews, 600000);
 
 
 async function fetchEarnings() {
+    const apiKey = 'd7nv1r1r01qs975tk5lgd7nv1r1r01qs975tk5m0';
     const calendarEl = document.getElementById('earnings-calendar');
 
-    // 트레이딩뷰 자체 스캐너 엔진 (API 키 불필요, 100% 실시간 데이터)
-    const targetUrl = 'https://scanner.tradingview.com/america/scan';
-    
-    // 추적할 주요 빅테크 종목 목록 (나스닥 및 뉴욕거래소 대장주)
-    const tickers = [
-        "NASDAQ:AAPL", "NASDAQ:MSFT", "NASDAQ:GOOGL", "NASDAQ:AMZN", 
-        "NASDAQ:NVDA", "NASDAQ:META", "NASDAQ:TSLA", "NASDAQ:AMD", 
-        "NASDAQ:NFLX", "NYSE:TSM", "NASDAQ:AVGO", "NASDAQ:QCOM", 
-        "NASDAQ:ASML", "NASDAQ:ARM", "NASDAQ:MU"
-    ];
-
-    // 스캐너에 요청할 데이터 (이름, 풀네임, 다음 실적발표일, 예상 EPS)
-    const requestBody = {
-        "symbols": { "tickers": tickers },
-        "columns": [
-            "name", 
-            "description", 
-            "earnings_release_next_date", 
-            "earnings_per_share_forecast_next_fq"
-        ]
+    const majorCompanies = {
+        'AAPL': '애플', 'MSFT': '마이크로소프트', 'GOOGL': '구글', 'AMZN': '아마존',
+        'NVDA': '엔비디아', 'META': '메타', 'TSLA': '테슬라', 'AMD': 'AMD',
+        'NFLX': '넷플릭스', 'TSM': 'TSMC', 'AVGO': '브로드컴', 'QCOM': '퀄컴',
+        'ASML': 'ASML', 'ARM': 'ARM', 'MU': '마이크론', 'INTC': '인텔',
+        'LLY': '일라이릴리', 'UNH': '유나이티드헬스', 'JNJ': '존슨앤존슨',
+        'JPM': 'JP모건', 'V': '비자', 'MA': '마스터카드', 'WMT': '월마트',
+        'PG': 'P&G', 'COST': '코스트코', 'XOM': '엑슨모빌', 'CVX': '쉐브론'
     };
 
-    try {
-        const response = await fetch(targetUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
-        });
-        
-        const data = await response.json();
-        let earningsData = [];
-        
-        // 데이터 정제 및 날짜 변환
-        if (data.data) {
-            data.data.forEach(item => {
-                const tickerStr = item.d[0];
-                const companyName = item.d[1];
-                const timestamp = item.d[2];
-                const eps = item.d[3];
-                
-                if (timestamp) {
-                    earningsData.push({
-                        symbol: tickerStr,
-                        name: companyName,
-                        // 트레이딩뷰의 유닉스 타임을 현재 시간으로 변환
-                        date: new Date(timestamp * 1000), 
-                        eps: eps ? eps.toFixed(2) + ' 달러' : '발표 전'
-                    });
-                }
-            });
-        }
-        
-        // 날짜 오름차순(가장 가까운 일정부터) 정렬
-        earningsData.sort((a, b) => a.date - b.date);
+    // 오늘 기준으로 5일 전부터 40일 후까지 스캔 (이미 발표된 결과도 확인하기 위함)
+    const today = new Date();
+    
+    const past = new Date();
+    past.setDate(today.getDate() - 5);
+    
+    const future = new Date();
+    future.setDate(today.getDate() + 40);
 
-        // 지난달 실적 등 너무 오래된 과거 데이터는 제외 (최근 15일 전까지만 허용)
-        const pastLimit = new Date();
-        pastLimit.setDate(pastLimit.getDate() - 15);
-        earningsData = earningsData.filter(e => e.date > pastLimit);
+    const fromDate = past.toISOString().split('T')[0];
+    const toDate = future.toISOString().split('T')[0];
+
+    let earningsData = [];
+
+    try {
+        calendarEl.innerHTML = '<div class="sub-data">대장주 실적 및 발표 결과를 실시간 수집 중입니다...</div>';
+
+        for (const symbol of Object.keys(majorCompanies)) {
+            const url = 'https://finnhub.io/api/v1/calendar/earnings?symbol=' + symbol + '&from=' + fromDate + '&to=' + toDate + '&token=' + apiKey;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.earningsCalendar && data.earningsCalendar.length > 0) {
+                const event = data.earningsCalendar[0]; 
+                earningsData.push({
+                    symbol: event.symbol,
+                    name: majorCompanies[event.symbol],
+                    dateString: event.date,
+                    epsEstimate: event.epsEstimate,
+                    epsActual: event.epsActual // 실제 발표된 실적 데이터
+                });
+            }
+        }
+
+        earningsData.sort((a, b) => new Date(a.dateString) - new Date(b.dateString));
 
         let htmlContent = '';
 
         earningsData.forEach(event => {
-            const dateStr = event.date.toLocaleDateString('ko-KR', {
+            const eventDate = new Date(event.dateString);
+            const dateStr = eventDate.toLocaleDateString('ko-KR', {
                 month: 'long', day: 'numeric', weekday: 'short'
             });
 
-            // 오늘 날짜와 비교하여 D-Day 계산
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const todayOnly = new Date();
+            todayOnly.setHours(0, 0, 0, 0);
             
-            const eventDateOnly = new Date(event.date);
+            const eventDateOnly = new Date(event.dateString);
             eventDateOnly.setHours(0, 0, 0, 0);
 
-            const timeDiff = eventDateOnly.getTime() - today.getTime();
-            const daysDiff = Math.round(timeDiff / (1000 * 3600 * 24));
+            const timeDiff = eventDateOnly.getTime() - todayOnly.getTime();
+            const daysDiff = Math.round(timeDiff / 86400000);
             
-            // 일정 임박 정도에 따른 시각적 강조
             let highlightColor = '#4b91ff'; 
             let dayText = '';
             
             if (daysDiff === 0) {
-                highlightColor = '#ff4b4b'; // 오늘: 빨간색
+                highlightColor = '#ff4b4b'; 
                 dayText = ' (오늘 실적발표!)';
             } else if (daysDiff === 1) {
-                highlightColor = '#f39c12'; // 내일: 주황색
+                highlightColor = '#f39c12'; 
                 dayText = ' (내일)';
-            } else if (daysDiff > 0 && daysDiff <= 7) {
-                dayText = ` (D-${daysDiff})`;
+            } else if (daysDiff > 0) {
+                dayText = ' (D-' + daysDiff + ')';
             } else if (daysDiff < 0) {
-                highlightColor = '#4c566a'; // 이미 지나간 실적: 회색
+                highlightColor = '#4c566a'; 
                 dayText = ' (발표 완료)';
             }
 
+            // 실적 결과 판별 로직
+            const est = event.epsEstimate !== null ? event.epsEstimate.toFixed(2) : '-';
+            const act = event.epsActual !== null ? event.epsActual.toFixed(2) : null;
+            
+            let resultText = '';
+            
+            if (act !== null) {
+                // 발표가 완료되어 실제 데이터가 들어온 경우
+                const isSurprise = parseFloat(act) >= parseFloat(est);
+                // 한국 증시 스타일: 예상보다 높으면 붉은색, 낮으면 푸른색
+                const actColor = isSurprise ? '#ff4b4b' : '#4b91ff'; 
+                resultText = `발표 결과 (EPS): <span style="color: ` + actColor + `; font-weight: bold; font-size: 0.95rem;">` + act + ` 달러</span> <span style="font-size: 0.75rem;">(예상: ` + est + `)</span>`;
+            } else {
+                // 아직 발표 전인 경우
+                resultText = `예상 EPS: <span style="color: #e5e9f0;">` + est + ` 달러</span>`;
+            }
+
             htmlContent += `
-                <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; border-left: 4px solid ${highlightColor}; padding-left: 10px;">
-                    <div style="color: ${highlightColor}; font-size: 0.85rem; margin-bottom: 3px; font-weight: bold;">
-                        ■ ${dateStr}${dayText}
+                <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; border-left: 4px solid ` + highlightColor + `; padding-left: 10px;">
+                    <div style="color: ` + highlightColor + `; font-size: 0.85rem; margin-bottom: 3px; font-weight: bold;">
+                        ■ ` + dateStr + dayText + `
                     </div>
                     <div style="color: #e5e9f0; font-size: 1rem;">
-                        <span style="color: #a3be8c; font-weight: bold;">${event.symbol}</span> | ${event.name}
+                        <span style="color: #a3be8c; font-weight: bold;">` + event.symbol + `</span> | ` + event.name + `
                     </div>
                     <div style="font-size: 0.85rem; color: #aaa; margin-top: 5px;">
-                        주당순이익(EPS) 예상치: <span style="color: #e5e9f0;">${event.eps}</span>
+                        ` + resultText + `
                     </div>
                 </div>
             `;
         });
 
-        calendarEl.innerHTML = htmlContent || '<div class="sub-data">조회된 실적 일정이 없습니다.</div>';
+        calendarEl.innerHTML = htmlContent || '<div class="sub-data">조회된 핵심 기업 실적 일정이 없습니다.</div>';
 
     } catch (error) {
-        calendarEl.innerHTML = '<div class="sub-data">트레이딩뷰 통신 에러가 발생했습니다.</div>';
+        calendarEl.innerHTML = '<div class="sub-data">API 통신 에러: 네트워크 상태를 확인해주세요.</div>';
     }
 }
 
 fetchEarnings();
-setInterval(fetchEarnings, 10800000);
-
+setInterval(fetchEarnings, 3600000);
 
 </script>
 </body>

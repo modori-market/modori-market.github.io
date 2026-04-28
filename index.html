@@ -353,43 +353,53 @@
     </div>
 </div>
 
-    <div class="card" style="grid-column: span 2;">
-            <h3>실시간 국내외 주요 언론사 뉴스</h3>
- 
-            <div style="display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap;">
- 
-                <!-- 국내 뉴스 -->
-                <div style="flex: 1; min-width: 300px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <div class="sub-data" style="color: #4b91ff;">▶ 국내 경제 주요 기사</div>
-                        <div style="display: flex; gap: 8px;">
-                            <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">매일경제</span>
-                            <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">한국경제</span>
-                        </div>
-                    </div>
-                    <div id="kr-news-container" style="height: 340px; overflow-y: auto; padding-right: 10px;">
-                        <div class="news-loading"><div class="spinner"></div>국내 기사 수집 중...</div>
-                    </div>
-                </div>
- 
-                <!-- 해외 뉴스 -->
-                <div style="flex: 1; min-width: 300px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <div class="sub-data" style="color: #ff4b4b;">▶ 글로벌 경제 주요 기사</div>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">Reuters</span>
-                            <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">CNBC</span>
-                            <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">MarketWatch</span>
-                        </div>
-                    </div>
-                    <div id="global-news-container" style="height: 340px; overflow-y: auto; padding-right: 10px;">
-                        <div class="news-loading"><div class="spinner"></div>글로벌 기사 수집 중...</div>
-                    </div>
+<div class="card" style="grid-column: 1 / -1; grid-row: span 2;">
+    <h3>실시간 국내외 주요 언론사 뉴스</h3>
+
+    <div style="display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap;">
+
+        <div style="flex: 1; min-width: 300px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div class="sub-data" style="color: #4b91ff;">▶ 국내 경제 주요 기사</div>
+                <div style="display: flex; gap: 8px;">
+                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">매일경제</span>
+                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">한국경제</span>
                 </div>
             </div>
+            <div id="kr-news-container" style="padding-right: 10px;">
+                <div class="news-loading"><div class="spinner"></div>국내 기사 수집 중...</div>
+            </div>
         </div>
- 
+
+        <div style="flex: 1; min-width: 300px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div class="sub-data" style="color: #a3be8c;">▶ 국내 보도 (미국/해외 증시)</div>
+                <div style="display: flex; gap: 8px;">
+                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">한경/매경 번역본</span>
+                </div>
+            </div>
+            <div id="kr-global-news-container" style="padding-right: 10px;">
+                <div class="news-loading"><div class="spinner"></div>해외 증시 기사 수집 중...</div>
+            </div>
+        </div>
+
+        <div style="flex: 1; min-width: 300px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div class="sub-data" style="color: #ff4b4b;">▶ 글로벌 경제 (원문 기사)</div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">Bloomberg</span>
+                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">WSJ</span>
+                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">FT</span>
+                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">Economist</span>
+                </div>
+            </div>
+            <div id="global-news-container" style="padding-right: 10px;">
+                <div class="news-loading"><div class="spinner"></div>글로벌 원문 기사 수집 중...</div>
+            </div>
+        </div>
+        
     </div>
+</div>
 
 
 <script>
@@ -572,11 +582,7 @@ async function fetchEarnings() {
 }
 
 
-/* ════════════════════════════════════════════
-   3. ★ 뉴스 (rss2json 기반 재구현)
-      - 국내: 매일경제 / 한국경제 RSS
-      - 해외: Reuters / CNBC / MarketWatch
-════════════════════════════════════════════ */
+
     // ■ VIX 지수 (가장 안정적인 AllOrigins JSON 방식으로 원복)
 async function fetchVixData() {
     const targetUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/^VIX?interval=1m';
@@ -614,26 +620,26 @@ async function fetchVixData() {
     }
 }
 
-// ■ 뉴스 (언론사별 지분율 균등 배분 필터링 적용)
-// ■ 뉴스 (6개 언론사 독립 호출 + 완벽한 지분율 1:1 분배)
+// ■ 뉴스 (1단 복구 + 전체 제목 출력 + 10개 유지)
+// ■ 뉴스 (3단 배열: 국내 / 국내보도 해외 / 글로벌 원문)
 async function fetchNews() {
-    // 발급받은 API 키를 아래에 다시 붙여넣으세요.
     const apiKey = '5eapcf9273ryavyvictodniigrgtuvf28qdyan22';
 
-    // 각 언론사를 묶지 않고 6개의 개별 채널로 분리합니다.
     const publishers = [
         { id: 'hankyung', query: 'site:hankyung.com', source: '한국경제', type: 'kr' },
         { id: 'mk', query: 'site:mk.co.kr', source: '매일경제', type: 'kr' },
         { id: 'bloomberg', query: 'site:bloomberg.com', source: 'Bloomberg', type: 'global' },
         { id: 'wsj', query: 'site:wsj.com', source: 'WSJ', type: 'global' },
         { id: 'ft', query: 'site:ft.com', source: 'Financial Times', type: 'global' },
-        { id: 'economist', query: 'site:economist.com', source: 'The Economist', type: 'global' }
+        { id: 'economist', query: 'site:economist.com', source: 'The Economist', type: 'global' },
+        // 새롭게 추가된 '국내 보도 해외 증시' 타겟팅 채널
+        { id: 'kr_us', query: '미국증시 OR 뉴욕증시 OR 월가 site:hankyung.com OR site:mk.co.kr', source: '국내보도(해외)', type: 'kr_global' }
     ];
 
     try {
-        // 6개의 통신망을 동시에 출발시킵니다. (속도 지연 없음)
         const fetchPromises = publishers.map(pub => {
-            const rssUrl = 'https://news.google.com/rss/search?q=' + encodeURIComponent(pub.query) + (pub.type === 'kr' ? '&hl=ko&gl=KR&ceid=KR:ko' : '&hl=en-US&gl=US&ceid=US:en');
+            // type이 global일 때만 영어권 세팅, 나머지는 한국어 세팅으로 요청
+            const rssUrl = 'https://news.google.com/rss/search?q=' + encodeURIComponent(pub.query) + (pub.type === 'global' ? '&hl=en-US&gl=US&ceid=US:en' : '&hl=ko&gl=KR&ceid=KR:ko');
             const apiUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rssUrl) + '&api_key=' + apiKey;
             return fetch(apiUrl).then(res => res.json()).then(data => ({ id: pub.id, source: pub.source, type: pub.type, data: data }));
         });
@@ -648,25 +654,29 @@ async function fetchNews() {
             return parts.join(' - ');
         };
 
-        const createHtml = (title, link, source, pubDate) => '<div style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #333;"><a href="' + link + '" target="_blank" style="color: #e5e9f0; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 5px; line-height: 1.4;">' + cleanTitle(title) + '</a><span style="font-size: 0.75rem; color: #888;">' + source + ' | ' + formatDate(pubDate) + '</span></div>';
+        const createHtml = (title, link, source, pubDate) => {
+            const cleaned = cleanTitle(title);
+            return '<div style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #333;"><a href="' + link + '" target="_blank" style="color: #e5e9f0; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 5px; line-height: 1.4;">' + cleaned + '</a><span style="font-size: 0.75rem; color: #888;">' + source + ' | ' + formatDate(pubDate) + '</span></div>';
+        };
 
-        // 바구니 준비
         const krBuckets = { '한국경제': [], '매일경제': [] };
         const globalBuckets = { 'Bloomberg': [], 'WSJ': [], 'Financial Times': [], 'The Economist': [] };
+        const krGlobalBuckets = [];
 
-        // 6개의 채널에서 받아온 기사들을 각각의 바구니에 안전하게 담습니다.
         results.forEach(res => {
             if (res.data.status === 'ok') {
                 res.data.items.forEach(item => {
                     if (res.type === 'kr') krBuckets[res.source].push(item);
-                    else globalBuckets[res.source].push(item);
+                    else if (res.type === 'global') globalBuckets[res.source].push(item);
+                    else if (res.type === 'kr_global') krGlobalBuckets.push(item);
                 });
             }
         });
 
-        // 1. 국내 뉴스 1:1 교차 조립
+        // 1. 순수 국내 뉴스 (10개)
         let krHtml = '';
         let krCount = 0;
+        
         while(krCount < 10 && (krBuckets['한국경제'].length > 0 || krBuckets['매일경제'].length > 0)) {
             if (krBuckets['한국경제'].length > 0) {
                 const it = krBuckets['한국경제'].shift();
@@ -682,7 +692,20 @@ async function fetchNews() {
         }
         document.getElementById('kr-news-container').innerHTML = krHtml || '<div class="sub-data">조회된 최신 기사가 없습니다.</div>';
 
-        // 2. 해외 뉴스 1:1:1:1 교차 조립
+        // 2. 국내 보도 해외 증시 뉴스 (10개)
+        let krGlobalHtml = '';
+        let krGlobalCount = 0;
+        
+        while(krGlobalCount < 10 && krGlobalBuckets.length > 0) {
+            const it = krGlobalBuckets.shift();
+            // 제목 끝의 언론사 꼬리표를 출처에 표기합니다.
+            const sourceName = it.title.includes('매일경제') ? '매일경제' : (it.title.includes('한국경제') ? '한국경제' : '국내보도');
+            krGlobalHtml += createHtml(it.title, it.link, sourceName, it.pubDate);
+            krGlobalCount++;
+        }
+        document.getElementById('kr-global-news-container').innerHTML = krGlobalHtml || '<div class="sub-data">조회된 최신 기사가 없습니다.</div>';
+
+        // 3. 글로벌 원문 뉴스 (10개)
         let globalHtml = '';
         let globalCount = 0;
         const gSources = ['Bloomberg', 'WSJ', 'Financial Times', 'The Economist'];
@@ -700,10 +723,13 @@ async function fetchNews() {
         document.getElementById('global-news-container').innerHTML = globalHtml || '<div class="sub-data">조회된 최신 기사가 없습니다.</div>';
 
     } catch (error) {
-        document.getElementById('kr-news-container').innerHTML = '<span class="sub-data">뉴스 통신 장애 원인: ' + error.message + '</span>';
-        document.getElementById('global-news-container').innerHTML = '<span class="sub-data">뉴스 통신 장애 원인: ' + error.message + '</span>';
+        document.getElementById('kr-news-container').innerHTML = '<span class="sub-data">통신 장애: ' + error.message + '</span>';
+        const krGlobalEl = document.getElementById('kr-global-news-container');
+        if (krGlobalEl) krGlobalEl.innerHTML = '<span class="sub-data">통신 장애: ' + error.message + '</span>';
+        document.getElementById('global-news-container').innerHTML = '<span class="sub-data">통신 장애: ' + error.message + '</span>';
     }
 }
+
 
 // ■ 4. 통합 실행 및 갱신 타이머
 fetchKodexData();

@@ -136,37 +136,67 @@
   </script>
 </div>
         </div>
+        
 
-        <div class="card">
-            <h3>미국 주요경제 지표 (금리, 인플레 등)</h3>
-            <div class="data-point positive">3.00%</div>
-            <div class="sub-data">미국 10년물 국채 금리</div>
-            <div class="data-point positive">3.1%</div>
-            <div class="sub-data">미국 CPI (YoY)</div>
+        <div class="card" style="grid-column: span 2;">
+            <h3>실시간 미국 경제 전 지표 (자동 번역)</h3>
+            <div id="economic-calendar" style="margin-top: 15px; height: 500px; overflow-y: auto; padding-right: 10px;">
+                <div class="sub-data">지표를 불러오는 중입니다...</div>
+            </div>
         </div>
 
-        <div class="card">
-            <h3>환율 (USD/KRW)</h3>
-            <div class="tradingview-widget-container">
-              <div class="tradingview-widget-container__widget"></div>
-              <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
-              {
-              "symbol": "FX_IDC:USDKRW",
-              "width": "100%",
-              "isTransparent": true,
-              "colorTheme": "dark",
-              "locale": "kr"
-            }
-              </script>
+        <div class="card" style="grid-column: span 2;">
+    <h3>환율 및 가상자산 실시간 시세</h3>
+    
+    <div style="display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 300px;">
+            <div class="sub-data" style="margin-bottom: 8px;">원/달러 환율 (USD/KRW)</div>
+            <div class="tradingview-widget-container" style="height: 200px;">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                {
+                "symbol": "FX_IDC:USDKRW",
+                "width": "100%",
+                "height": "100%",
+                "locale": "kr",
+                "dateRange": "1M",
+                "colorTheme": "dark",
+                "isTransparent": true,
+                "autosize": true,
+                "largeChartUrl": ""
+                }
+                </script>
             </div>
+        </div>
+
+        <div style="flex: 1; min-width: 300px;">
+            <div class="sub-data" style="margin-bottom: 8px;">비트코인 (BTC/USDT)</div>
+            <div class="tradingview-widget-container" style="height: 200px;">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                {
+                "symbol": "BINANCE:BTCUSDT",
+                "width": "100%",
+                "height": "100%",
+                "locale": "kr",
+                "dateRange": "1M",
+                "colorTheme": "dark",
+                "isTransparent": true,
+                "autosize": true,
+                "largeChartUrl": ""
+                }
+                </script>
             </div>
+        </div>
+    </div>
+</div>
 
 <div class="card">
     <h3>시장 공포 및 변동성 (Weekly Trend)</h3>
     
     <div style="margin-bottom: 25px; position: relative;">
-        <div class="sub-data" style="margin-bottom: 10px;">옵션 풋/콜 비율 (USI:PCC) - [클릭 시 이동]</div>
-        <a href="https://www.tradingview.com/symbols/CBOE-PCC/" target="_blank" style="display: block; text-decoration: none;">
+        <div class="sub-data" style="margin-bottom: 10px;">옵션 풋/콜 비율 (USI:PCC) - [클릭 시 cnn 이동]</div>
+        <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" style="display: block; text-decoration: none;">
             <div class="tradingview-widget-container" style="pointer-events: none;">
                 <div class="tradingview-widget-container__widget"></div>
                 <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
@@ -207,56 +237,464 @@
     </div>
 </div>
 
-        <div class="card">
-            <h3>미국 핵심 ETF RSI</h3>
-            <div class="data-point positive">65</div>
-            <div class="sub-data">SOXL RSI (14일)</div>
-            <div class="data-point important">72</div>
-            <div class="sub-data">SOXX RSI (14일) | <span class="important">Overbought</span></div>
-        </div>
-    
-        <div class="card">
-            <h3>KODEX 코스닥150 레버리지 지표</h3>
-            <div class="data-point positive">55</div>
-            <div class="sub-data">일봉 기준 RSI (14일)</div>
-            <div class="data-point important">110%</div>
-            <div class="sub-data">20일 이동평균선 이격도 | <span class="important">매우 높음</span></div>
-        </div>
+<div class="card" style="grid-column: span 1;">
+            <h3>미국 핵심 ETF (SOXL / SOXX) RSI 지표</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 10px;">
+                <div style="height: 250px;">
+                    <div class="sub-data" style="margin-bottom: 5px;">SOXL 가격 흐름 및 하단 RSI (14) 수치</div>
+                    <div class="tradingview-widget-container" style="height:100%;width:100%">
+                      <div id="tv_soxl" style="height:calc(100% - 32px);width:100%"></div>
+                      <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                      <script type="text/javascript">
+                      new TradingView.widget({
+                      "autosize": true,
+                      "symbol": "AMEX:SOXL",
+                      "interval": "D",
+                      "timezone": "Asia/Seoul",
+                      "theme": "dark",
+                      "style": "2",
+                      "locale": "kr",
+                      "enable_publishing": false,
+                      "hide_top_toolbar": true,
+                      "hide_legend": true,
+                      "save_image": false,
+                      "container_id": "tv_soxl",
+                      "studies": [
+                        "RSI@tv-basicstudies"
+                      ]
+                    });
+                      </script>
+                    </div>
+                    </div>
 
-        <div class="card chart-card">
-            <h3>핵심기업 실적 (가장 빠른 시간 브리핑)</h3>
-            <div class="text-card">
-                <p>● **애플 (AAPL):** 예상 매출 상회, <span class="positive">자사주 매입 발표</span></p>
-                <p>● **테슬라 (TSLA):** 예상 이익 하회, <span class="important">마진 압박 지속</span></p>
+                <div style="height: 250px;">
+                    <div class="sub-data" style="margin-bottom: 5px;">SOXX 가격 흐름 및 하단 RSI (14) 수치</div>
+                    <div class="tradingview-widget-container" style="height:100%;width:100%">
+                      <div id="tv_soxx" style="height:calc(100% - 32px);width:100%"></div>
+                      <script type="text/javascript">
+                      new TradingView.widget({
+                      "autosize": true,
+                      "symbol": "NASDAQ:SOXX",
+                      "interval": "D",
+                      "timezone": "Asia/Seoul",
+                      "theme": "dark",
+                      "style": "2",
+                      "locale": "kr",
+                      "enable_publishing": false,
+                      "hide_top_toolbar": true,
+                      "hide_legend": true,
+                      "save_image": false,
+                      "container_id": "tv_soxx",
+                      "studies": [
+                        "RSI@tv-basicstudies"
+                      ]
+                    });
+                      </script>
+                    </div>
+                    </div>
             </div>
         </div>
 
-        <div class="card text-card">
-            <h3>시장 테마 및 정보</h3>
-            <p>● 전일/금일 테마: <span class="positive">AI, 반도체 장비</span> 강세</p>
-            <p>● 시간외 종목: 삼성전자 상한가 (소문)</p>
-            <p>● 청약/상장: 카카오뱅크 상장 (D-1)</p>
+        <div class="card">
+            <h3>KODEX 코스닥150 레버리지</h3>
+            <div style="margin-top: 15px;">
+                <span class="sub-data">현재가</span>
+                <div id="kodex-price" class="data-point">로딩 중...</div>
+            </div>
+            <div style="display: flex; gap: 20px; margin-top: 15px;">
+                <div style="flex: 1;">
+                    <span class="sub-data">20일선 이격도</span>
+                    <div id="kodex-disparity" class="data-point">로딩 중...</div>
+                </div>
+                <div style="flex: 1;">
+                    <span class="sub-data">RSI (14일)</span>
+                    <div id="kodex-rsi" class="data-point">로딩 중...</div>
+                </div>
+            </div>
         </div>
 
-        <div class="card text-card">
-            <h3>장전 주요기사 (전날 & 새벽 기준)</h3>
-            <p>● [국제] 미 국채 금리 하락, 뉴욕 증시 일제히 <span class="positive">상승 마감</span></p>
-            <p>● [산업] 바이든 정부, 반도체 보조금 지급 계획 공식 발표</p>
+        <div class="card" style="grid-column: span 2;">
+    <h3>주요 빅테크 기업 실적 발표 일정</h3>
+    <div id="earnings-calendar" style="margin-top: 15px; height: 350px; overflow-y: auto; padding-right: 10px;">
+        <div class="sub-data">실적 일정을 불러오는 중입니다...</div>
+    </div>
+</div>
+
+    <div class="card" style="grid-column: span 2;">
+    <h3>실시간 국내외 주요 언론사 뉴스</h3>
+    
+    <div style="display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 300px;">
+            <div class="sub-data" style="margin-bottom: 10px; color: #4b91ff;">▶ 국내 경제 주요 기사</div>
+            <div id="kr-news-container" style="height: 300px; overflow-y: auto; padding-right: 10px;">
+                <div class="sub-data">국내 언론사 기사를 불러오는 중...</div>
+            </div>
         </div>
 
-        <div class="card text-card">
-            <h3>일정 및 분석</h3>
-            <p>● 유튜브 분석: 최신 유튜브 분석 제목 및 <span class="positive">링크</span></p>
-            <p>● 주식 일정: 미 연준 금리 결정 발표 (D-2)</p>
+        <div style="flex: 1; min-width: 300px;">
+            <div class="sub-data" style="margin-bottom: 10px; color: #ff4b4b;">▶ 글로벌 경제 주요 기사</div>
+            <div id="global-news-container" style="height: 300px; overflow-y: auto; padding-right: 10px;">
+                <div class="sub-data">글로벌 언론사 기사를 불러오는 중...</div>
+            </div>
         </div>
-
-        <div class="card text-card important-card">
-            <h3>제미나이의 애널리스트 관점 다양한 해석</h3>
-            <p>● **시장 전반:** 현재 시장은 매크로 불확실성에도 불구하고 <span class="positive">AI 섹터의 강력한 실적성장에 집중하는 모습</span>입니다.</p>
-            <p>● **핵심 조언:** 하지만 주요 ETF의 RSI가 과열 구간에 진입했으며, VIX 지수 상승은 일시적인 차익 실현 매물 출회 가능성을 시사하므로, <span class="important">포트폴리오의 일부분은 현금 비중을 확보</span>하는 전략이 유리합니다.</p>
-        </div>
+    </div>
+</div>
 
     </div>
 
+<script>
+async function fetchKodexData() {
+    // 1. 사용자의 구글 시트 원본 주소 (끝에 시간을 붙여서 우회 서버의 캐시 멈춤 현상을 방지합니다)
+    const targetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtxh-v_QZHImfjP05zw7k16o-jTnO05KmVvoIUUh3B7UKbIIt9VVPIhEx3l6MEtQlMdtmvG-bK4Eh/pub?gid=0&single=true&output=csv' + new Date().getTime();
+    
+    // 2. CORS 보안 에러를 막기 위한 우회 서버(프록시) 결합 주소
+    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+    
+    try {
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error('우회 서버 응답 거부');
+        
+        const data = await response.text();
+        
+        // 3. 데이터 정제 과정 (불순물 완벽 제거)
+        const cleanData = data.replace(/"/g, '');
+        const rows = cleanData.split(/\r?\n/);
+        const prices = [];
+        
+        for (let i = 1; i < rows.length; i++) {
+            if (rows[i].trim() === '') continue;
+            
+            const parts = rows[i].split(',');
+            // CSV 구조상 마지막 데이터가 종가
+            const priceStr = parts[parts.length - 1].replace(/,/g, '').trim();
+            const price = parseFloat(priceStr);
+            
+            if (!isNaN(price) && price > 0) {
+                prices.push(price);
+            }
+        }
+        
+        // 4. 증권사 방식은 최소 150일 이상의 과거 데이터가 필요함
+        if (prices.length < 150) {
+            document.getElementById('kodex-price').innerText = '데이터 축적 중... (' + prices.length + ')';
+            return;
+        }
+        
+        const currentPrice = prices[prices.length - 1];
+        document.getElementById('kodex-price').innerText = currentPrice.toLocaleString() + '원';
+        
+        // 5. 20일 이동평균선 및 이격도 계산
+        let sum20 = 0;
+        for (let i = prices.length - 20; i < prices.length; i++) {
+            sum20 += prices[i];
+        }
+        const ma20 = sum20 / 20;
+        const disparity = (currentPrice / ma20) / 0.01;
+        
+        const disparityEl = document.getElementById('kodex-disparity');
+        disparityEl.innerText = disparity.toFixed(2) + '%';
+        disparityEl.style.color = disparity > 100 ? '#ff4b4b' : '#4b91ff';
+        
+        // 6. 증권사 방식 RSI (Wilder's Smoothing) 정밀 계산 로직
+        let avgGain = 0;
+        let avgLoss = 0;
+        
+        // 첫 14일간의 평균 계산 (초기 기준값 세팅)
+        for (let i = 1; i <= 14; i++) {
+            const change = prices[i] - prices[i - 1];
+            if (change > 0) avgGain += change;
+            else avgLoss -= change;
+        }
+        avgGain = avgGain / 14;
+        avgLoss = avgLoss / 14;
+        
+        // 나머지 전체 기간(약 200일) 동안 지수 가중치 누적 적용
+        for (let i = 15; i < prices.length; i++) {
+            const change = prices[i] - prices[i - 1];
+            const currentGain = change > 0 ? change : 0;
+            const currentLoss = change < 0 ? -change : 0;
+            
+            avgGain = (avgGain * 13 + currentGain) / 14;
+            avgLoss = (avgLoss * 13 + currentLoss) / 14;
+        }
+        
+        const rs = avgGain / (avgLoss || 1);
+        const rsi = 100 - (100 / (1 + rs));
+        
+        const rsiEl = document.getElementById('kodex-rsi');
+        rsiEl.innerText = rsi.toFixed(2);
+        
+        if (rsi >= 70) rsiEl.style.color = '#ff4b4b';
+        else if (rsi <= 30) rsiEl.style.color = '#4b91ff';
+        else rsiEl.style.color = '#a3be8c';
+        
+    } catch (error) {
+        document.getElementById('kodex-price').innerText = '우회 통신 에러';
+        document.getElementById('kodex-disparity').innerText = '--%';
+        document.getElementById('kodex-rsi').innerText = '--';
+    }
+}
+
+fetchKodexData();
+setInterval(fetchKodexData, 60000);
+
+async function fetchEconomicCalendar() {
+    const apiKey = 'd7nv1r1r01qs975tk5lgd7nv1r1r01qs975tk5m0';
+    const calendarEl = document.getElementById('economic-calendar');
+    
+    // 번역 사전 확장 (다양한 지표 대응)
+    const translationMap = {
+        'CPI': '소비자물가지수 (CPI)',
+        'PPI': '생산자물가지수 (PPI)',
+        'FOMC': '연준 금리 결정/연설',
+        'Non-farm': '비농업 고용지수',
+        'Unemployment': '실업률',
+        'GDP': '국내총생산 (GDP)',
+        'Retail Sales': '소매판매',
+        'Claims': '실업수당 청구건수',
+        'Manufacturing': '제조업 지수',
+        'Housing': '주택 지표',
+        'Consumer Sentiment': '소비자 심리지수',
+        'Durable Goods': '내구재 주문',
+        'Personal Spending': '개인 소비'
+    };
+
+    try {
+        const response = await fetch(`https://finnhub.io/api/v1/calendar/economic?token=${apiKey}`);
+        const data = await response.json();
+        const events = data.economicCalendar;
+
+        // 필터링 없이 미국(US) 데이터만 모두 추출
+        const usEvents = events.filter(e => e.country === 'US');
+        
+        let htmlContent = '';
+        
+        usEvents.forEach(event => {
+            let translatedName = event.event;
+            for (const [eng, kor] of Object.entries(translationMap)) {
+                if (translatedName.includes(eng)) {
+                    translatedName = kor;
+                    break;
+                }
+            }
+
+            const eventDate = new Date(event.time).toLocaleString('ko-KR', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            // 중요도(impact)에 따라 바 색상을 다르게 표시 (Low/Medium/High 모두 포함)
+            const impactColor = event.impact === 'High' ? '#ff4b4b' : (event.impact === 'Medium' ? '#f39c12' : '#aaaaaa');
+
+            htmlContent += `
+                <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; border-left: 4px solid ${impactColor}; padding-left: 10px;">
+                    <div style="color: ${impactColor}; font-size: 0.8rem; margin-bottom: 3px;">
+                        ■ ${eventDate} [중요도: ${event.impact || '일반'}]
+                    </div>
+                    <div style="color: #e5e9f0; font-weight: bold; font-size: 0.9rem;">${translatedName}</div>
+                    <div style="font-size: 0.85rem; color: #aaa; margin-top: 3px;">
+                        예측: ${event.estimate || '-'} | 실제: <span style="color: #4b91ff;">${event.actual || '대기'}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        calendarEl.innerHTML = htmlContent || '<div class="sub-data">현재 예정된 미국 지표가 없습니다.</div>';
+
+    } catch (error) {
+        calendarEl.innerHTML = '<div class="sub-data">지표 로드 실패</div>';
+    }
+}
+
+fetchEconomicCalendar();
+setInterval(fetchEconomicCalendar, 300000); // 5분마다 갱신
+
+async function fetchNews() {
+    // 구글 뉴스가 각 언론사의 경제 기사를 모아둔 RSS 주소입니다.
+    const krRssUrl = 'https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=ko&gl=KR&ceid=KR:ko';
+    const globalRssUrl = 'https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-US&gl=US&ceid=US:en';
+
+    // 깃허브 보안(CORS)을 뚫고 RSS를 자바스크립트가 읽을 수 있게 변환해 주는 무료 우회 API
+    const krApiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(krRssUrl)}`;
+    const globalApiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(globalRssUrl)}`;
+
+    try {
+        // 1. 국내 뉴스 가져오기
+        const krResponse = await fetch(krApiUrl);
+        const krData = await krResponse.json();
+        let krHtml = '';
+        
+        if (krData.items) {
+            // 최신 기사 10개만 추출
+            krData.items.slice(0, 10).forEach(item => {
+                const date = new Date(item.pubDate).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                krHtml += `
+                    <div style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #333;">
+                        <a href="${item.link}" target="_blank" style="color: #e5e9f0; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 5px; line-height: 1.4;">
+                            ${item.title}
+                        </a>
+                        <span style="font-size: 0.75rem; color: #888;">${item.source || '경제신문'} | ${date}</span>
+                    </div>
+                `;
+            });
+            document.getElementById('kr-news-container').innerHTML = krHtml;
+        }
+
+        // 2. 글로벌 뉴스 가져오기
+        const globalResponse = await fetch(globalApiUrl);
+        const globalData = await globalResponse.json();
+        let globalHtml = '';
+        
+        if (globalData.items) {
+            // 최신 기사 10개만 추출
+            globalData.items.slice(0, 10).forEach(item => {
+                const date = new Date(item.pubDate).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                globalHtml += `
+                    <div style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #333;">
+                        <a href="${item.link}" target="_blank" style="color: #e5e9f0; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 5px; line-height: 1.4;">
+                            ${item.title}
+                        </a>
+                        <span style="font-size: 0.75rem; color: #888;">${item.source || 'Global News'} | ${date}</span>
+                    </div>
+                `;
+            });
+            document.getElementById('global-news-container').innerHTML = globalHtml;
+        }
+
+    } catch (error) {
+        document.getElementById('kr-news-container').innerHTML = '<span class="sub-data">뉴스 통신 에러가 발생했습니다.</span>';
+        document.getElementById('global-news-container').innerHTML = '<span class="sub-data">뉴스 통신 에러가 발생했습니다.</span>';
+    }
+}
+
+// 최초 실행 및 10분 간격으로 자동 새로고침
+fetchNews();
+setInterval(fetchNews, 600000);
+
+
+async function fetchEarnings() {
+    const calendarEl = document.getElementById('earnings-calendar');
+
+    // 트레이딩뷰 자체 스캐너 엔진 (API 키 불필요, 100% 실시간 데이터)
+    const targetUrl = 'https://scanner.tradingview.com/america/scan';
+    
+    // 추적할 주요 빅테크 종목 목록 (나스닥 및 뉴욕거래소 대장주)
+    const tickers = [
+        "NASDAQ:AAPL", "NASDAQ:MSFT", "NASDAQ:GOOGL", "NASDAQ:AMZN", 
+        "NASDAQ:NVDA", "NASDAQ:META", "NASDAQ:TSLA", "NASDAQ:AMD", 
+        "NASDAQ:NFLX", "NYSE:TSM", "NASDAQ:AVGO", "NASDAQ:QCOM", 
+        "NASDAQ:ASML", "NASDAQ:ARM", "NASDAQ:MU"
+    ];
+
+    // 스캐너에 요청할 데이터 (이름, 풀네임, 다음 실적발표일, 예상 EPS)
+    const requestBody = {
+        "symbols": { "tickers": tickers },
+        "columns": [
+            "name", 
+            "description", 
+            "earnings_release_next_date", 
+            "earnings_per_share_forecast_next_fq"
+        ]
+    };
+
+    try {
+        const response = await fetch(targetUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+        
+        const data = await response.json();
+        let earningsData = [];
+        
+        // 데이터 정제 및 날짜 변환
+        if (data.data) {
+            data.data.forEach(item => {
+                const tickerStr = item.d[0];
+                const companyName = item.d[1];
+                const timestamp = item.d[2];
+                const eps = item.d[3];
+                
+                if (timestamp) {
+                    earningsData.push({
+                        symbol: tickerStr,
+                        name: companyName,
+                        // 트레이딩뷰의 유닉스 타임을 현재 시간으로 변환
+                        date: new Date(timestamp * 1000), 
+                        eps: eps ? eps.toFixed(2) + ' 달러' : '발표 전'
+                    });
+                }
+            });
+        }
+        
+        // 날짜 오름차순(가장 가까운 일정부터) 정렬
+        earningsData.sort((a, b) => a.date - b.date);
+
+        // 지난달 실적 등 너무 오래된 과거 데이터는 제외 (최근 15일 전까지만 허용)
+        const pastLimit = new Date();
+        pastLimit.setDate(pastLimit.getDate() - 15);
+        earningsData = earningsData.filter(e => e.date > pastLimit);
+
+        let htmlContent = '';
+
+        earningsData.forEach(event => {
+            const dateStr = event.date.toLocaleDateString('ko-KR', {
+                month: 'long', day: 'numeric', weekday: 'short'
+            });
+
+            // 오늘 날짜와 비교하여 D-Day 계산
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const eventDateOnly = new Date(event.date);
+            eventDateOnly.setHours(0, 0, 0, 0);
+
+            const timeDiff = eventDateOnly.getTime() - today.getTime();
+            const daysDiff = Math.round(timeDiff / (1000 * 3600 * 24));
+            
+            // 일정 임박 정도에 따른 시각적 강조
+            let highlightColor = '#4b91ff'; 
+            let dayText = '';
+            
+            if (daysDiff === 0) {
+                highlightColor = '#ff4b4b'; // 오늘: 빨간색
+                dayText = ' (오늘 실적발표!)';
+            } else if (daysDiff === 1) {
+                highlightColor = '#f39c12'; // 내일: 주황색
+                dayText = ' (내일)';
+            } else if (daysDiff > 0 && daysDiff <= 7) {
+                dayText = ` (D-${daysDiff})`;
+            } else if (daysDiff < 0) {
+                highlightColor = '#4c566a'; // 이미 지나간 실적: 회색
+                dayText = ' (발표 완료)';
+            }
+
+            htmlContent += `
+                <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; border-left: 4px solid ${highlightColor}; padding-left: 10px;">
+                    <div style="color: ${highlightColor}; font-size: 0.85rem; margin-bottom: 3px; font-weight: bold;">
+                        ■ ${dateStr}${dayText}
+                    </div>
+                    <div style="color: #e5e9f0; font-size: 1rem;">
+                        <span style="color: #a3be8c; font-weight: bold;">${event.symbol}</span> | ${event.name}
+                    </div>
+                    <div style="font-size: 0.85rem; color: #aaa; margin-top: 5px;">
+                        주당순이익(EPS) 예상치: <span style="color: #e5e9f0;">${event.eps}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        calendarEl.innerHTML = htmlContent || '<div class="sub-data">조회된 실적 일정이 없습니다.</div>';
+
+    } catch (error) {
+        calendarEl.innerHTML = '<div class="sub-data">트레이딩뷰 통신 에러가 발생했습니다.</div>';
+    }
+}
+
+fetchEarnings();
+setInterval(fetchEarnings, 10800000);
+
+
+</script>
 </body>
 </html>

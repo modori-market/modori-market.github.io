@@ -620,26 +620,26 @@ async function fetchVixData() {
     }
 }
 
-// ■ 뉴스 (1단 복구 + 전체 제목 출력 + 10개 유지)
-// ■ 뉴스 (3단 배열: 국내 / 국내보도 해외 / 글로벌 원문)
+// ■ 뉴스 (경제 키워드 강제 + 초 단위 시간순 완벽 정렬 기능 추가)
 async function fetchNews() {
     const apiKey = '5eapcf9273ryavyvictodniigrgtuvf28qdyan22';
 
     const publishers = [
-        { id: 'hankyung', query: 'site:hankyung.com', source: '한국경제', type: 'kr' },
-        { id: 'mk', query: 'site:mk.co.kr', source: '매일경제', type: 'kr' },
-        { id: 'bloomberg', query: 'site:bloomberg.com', source: 'Bloomberg', type: 'global' },
-        { id: 'wsj', query: 'site:wsj.com', source: 'WSJ', type: 'global' },
-        { id: 'ft', query: 'site:ft.com', source: 'Financial Times', type: 'global' },
-        { id: 'economist', query: 'site:economist.com', source: 'The Economist', type: 'global' },
-        // 새롭게 추가된 '국내 보도 해외 증시' 타겟팅 채널
-        { id: 'kr_us', query: '미국증시 OR 뉴욕증시 OR 월가 site:hankyung.com OR site:mk.co.kr', source: '국내보도(해외)', type: 'kr_global' }
+        // 국내 뉴스에 경제/주식 키워드를 강제 포함하여 스포츠 및 연예 기사 원천 차단
+        { id: 'hankyung', query: '(증시 OR 경제 OR 주식 OR 산업) site:hankyung.com when:1d', source: '한국경제', type: 'kr' },
+        { id: 'mk', query: '(증시 OR 경제 OR 주식 OR 산업) site:mk.co.kr when:1d', source: '매일경제', type: 'kr' },
+        { id: 'bloomberg', query: 'site:bloomberg.com when:2d', source: 'Bloomberg', type: 'global' },
+        { id: 'wsj', query: 'site:wsj.com when:2d', source: 'WSJ', type: 'global' },
+        { id: 'ft', query: 'site:ft.com when:2d', source: 'Financial Times', type: 'global' },
+        { id: 'economist', query: 'site:economist.com when:7d', source: 'The Economist', type: 'global' },
+        // 미국/해외 증시 뉴스 시간 제한을 1d(24시간)로 더욱 타이트하게 조임
+        { id: 'kr_us', query: '(미국증시 OR 뉴욕증시 OR 나스닥 OR 월가) (site:hankyung.com OR site:mk.co.kr) when:1d', source: '국내보도(해외)', type: 'kr_global' }
     ];
 
     try {
         const fetchPromises = publishers.map(pub => {
-            // type이 global일 때만 영어권 세팅, 나머지는 한국어 세팅으로 요청
-            const rssUrl = 'https://news.google.com/rss/search?q=' + encodeURIComponent(pub.query) + (pub.type === 'global' ? '&hl=en-US&gl=US&ceid=US:en' : '&hl=ko&gl=KR&ceid=KR:ko');
+            const cacheBuster = '&t=' + new Date().getTime();
+            const rssUrl = 'https://news.google.com/rss/search?q=' + encodeURIComponent(pub.query) + (pub.type === 'global' ? '&hl=en-US&gl=US&ceid=US:en' : '&hl=ko&gl=KR&ceid=KR:ko') + cacheBuster;
             const apiUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rssUrl) + '&api_key=' + apiKey;
             return fetch(apiUrl).then(res => res.json()).then(data => ({ id: pub.id, source: pub.source, type: pub.type, data: data }));
         });
@@ -664,7 +664,7 @@ async function fetchNews() {
         const krGlobalBuckets = [];
 
         results.forEach(res => {
-            if (res.data.status === 'ok') {
+            if (res.data && res.data.status === 'ok') {
                 res.data.items.forEach(item => {
                     if (res.type === 'kr') krBuckets[res.source].push(item);
                     else if (res.type === 'global') globalBuckets[res.source].push(item);
@@ -672,6 +672,18 @@ async function fetchNews() {
                 });
             }
         });
+
+        // ■ 구글의 인기순 정렬을 무시하고, 발행된 초 단위까지 계산하여 무조건 최신 시간순으로 재정렬합니다.
+        const sortByDateDesc = (a, b) => new Date(b.pubDate.replace(' ', 'T')) - new Date(a.pubDate.replace(' ', 'T'));
+
+        if(krBuckets['한국경제'].length) krBuckets['한국경제'].sort(sortByDateDesc);
+        if(krBuckets['매일경제'].length) krBuckets['매일경제'].sort(sortByDateDesc);
+        krGlobalBuckets.sort(sortByDateDesc);
+        
+        globalBuckets['Bloomberg'].sort(sortByDateDesc);
+        globalBuckets['WSJ'].sort(sortByDateDesc);
+        globalBuckets['Financial Times'].sort(sortByDateDesc);
+        globalBuckets['The Economist'].sort(sortByDateDesc);
 
         // 1. 순수 국내 뉴스 (10개)
         let krHtml = '';
@@ -698,7 +710,6 @@ async function fetchNews() {
         
         while(krGlobalCount < 10 && krGlobalBuckets.length > 0) {
             const it = krGlobalBuckets.shift();
-            // 제목 끝의 언론사 꼬리표를 출처에 표기합니다.
             const sourceName = it.title.includes('매일경제') ? '매일경제' : (it.title.includes('한국경제') ? '한국경제' : '국내보도');
             krGlobalHtml += createHtml(it.title, it.link, sourceName, it.pubDate);
             krGlobalCount++;
@@ -731,6 +742,8 @@ async function fetchNews() {
 }
 
 
+
+
 // ■ 4. 통합 실행 및 갱신 타이머
 fetchKodexData();
 setInterval(fetchKodexData, 300000);
@@ -739,7 +752,7 @@ fetchEarnings();
 setInterval(fetchEarnings, 3600000);
 
 fetchNews();         
-setInterval(fetchNews,        600000); // 10분
+setInterval(fetchNews,        30000); 
 
 fetchVixData();      
 setInterval(fetchVixData,     60000);  // 1분

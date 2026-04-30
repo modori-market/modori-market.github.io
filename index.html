@@ -762,9 +762,118 @@ async function fetchEconomicCalendar() {
     const apiKey = 'd7nv1r1r01qs975tk5lgd7nv1r1r01qs975tk5m0';
     const calendarEl = document.getElementById('economic-calendar');
     
+    // [핵심 변경] 단어 길이가 긴(구체적인) 지표를 위로, 짧은(포괄적인) 지표를 아래로 완벽 분리
     const translationMap = {
+        // 1. 물가 지표 (인플레이션)
+        'Core PCE Price Index YoY': '근원 개인소비지출(PCE) 물가 (전년동기)',
+        'Core PCE Price Index MoM': '근원 개인소비지출(PCE) 물가 (전월대비)',
+        'PCE Price Index YoY': '개인소비지출(PCE) 물가 (전년동기)',
+        'PCE Price Index MoM': '개인소비지출(PCE) 물가 (전월대비)',
+        'Core PCE': '근원 개인소비지출(PCE)',
+        'PCE': '개인소비지출(PCE)',
+
+        'Core CPI YoY': '근원 소비자물가지수 (전년동기)',
+        'Core CPI MoM': '근원 소비자물가지수 (전월대비)',
+        'Core CPI': '근원 소비자물가지수 (Core CPI)',
+        'CPI YoY': '소비자물가지수 (전년동기)',
+        'CPI MoM': '소비자물가지수 (전월대비)',
         'CPI': '소비자물가지수 (CPI)',
-        'PPI': '생산자물가지수 (PPI)'
+
+        'Core PPI YoY': '근원 생산자물가지수 (전년동기)',
+        'Core PPI MoM': '근원 생산자물가지수 (전월대비)',
+        'Core PPI': '근원 생산자물가지수 (Core PPI)',
+        'PPI YoY': '생산자물가지수 (전년동기)',
+        'PPI MoM': '생산자물가지수 (전월대비)',
+        'PPI': '생산자물가지수 (PPI)',
+
+        // 2. 고용 지표
+        'Initial Jobless Claims': '신규 실업수당 청구건수',
+        'Continuing Jobless Claims': '연속 실업수당 청구건수',
+        'Jobless Claims': '실업수당 청구건수',
+        'Claims': '실업수당 청구건수',
+
+        'Nonfarm Payrolls Private': '민간 비농업 부문 고용자수',
+        'Nonfarm Payrolls': '비농업 부문 고용자수 (NFP)',
+        'Non-farm': '비농업 고용지수',
+        
+        'ADP Employment Change': 'ADP 민간 고용보고서',
+        'ADP': 'ADP 민간 고용보고서',
+
+        'JOLTs Job Openings': 'JOLTs 구인·이직 보고서',
+        'JOLTS': 'JOLTs 구인·이직 보고서',
+
+        'Unemployment Rate': '실업률',
+        'Unemployment': '실업률',
+
+        // 3. 부동산 지표 (방금 분리한 항목 포함)
+        'Building Permits MoM Prel': '건축허가 건수 예비치 (전월대비)',
+        'Building Permits Prel': '건축허가 건수 예비치 (총량)',
+        'Building Permits MoM': '건축허가 건수 (전월대비)',
+        'Building Permits': '건축허가 건수',
+
+        'Housing Starts MoM': '주택착공 건수 (전월대비)',
+        'Housing Starts': '주택착공 건수',
+
+        'Existing Home Sales MoM': '기존주택 판매 (전월대비)',
+        'Existing Home Sales': '기존주택 판매',
+        
+        'New Home Sales MoM': '신규주택 판매 (전월대비)',
+        'New Home Sales': '신규주택 판매',
+        'Housing Price Index': '주택가격지수',
+        'Housing': '주택 지표',
+
+        // 4. 제조업 및 구매관리자지수 (PMI)
+        'ISM Non-Manufacturing PMI': 'ISM 비제조업 구매관리자지수',
+        'ISM Non-Manufacturing': 'ISM 비제조업 구매관리자지수',
+        'ISM Manufacturing PMI': 'ISM 제조업 구매관리자지수',
+        'ISM Manufacturing': 'ISM 제조업 구매관리자지수',
+        'ISM Services PMI': 'ISM 서비스업 구매관리자지수',
+        'ISM Services': 'ISM 서비스업 구매관리자지수',
+        'S&P Global Composite PMI': 'S&P 글로벌 종합 PMI',
+        'S&P Global Manufacturing PMI': 'S&P 글로벌 제조업 PMI',
+        'S&P Global Services PMI': 'S&P 글로벌 서비스업 PMI',
+        'Manufacturing PMI': '제조업 구매관리자지수 (PMI)',
+        'Services PMI': '서비스업 구매관리자지수 (PMI)',
+        'Manufacturing': '제조업 지수',
+        'PMI': '구매관리자지수 (PMI)',
+
+        // 5. 소비, 생산 및 GDP 지표
+        'CB Consumer Confidence': 'CB 소비자신뢰지수',
+        'Consumer Confidence': 'CB 소비자신뢰지수',
+        'Michigan Consumer Sentiment Prel': '미시간대 소비자심리지수 예비치',
+        'Michigan Consumer Sentiment': '미시간대 소비자심리지수',
+        'Consumer Sentiment': '소비자심리지수',
+
+        'Core Retail Sales MoM': '근원 소매판매 (전월대비)',
+        'Retail Sales MoM': '소매판매 (전월대비)',
+        'Retail Sales YoY': '소매판매 (전년동기)',
+        'Retail Sales': '소매판매',
+
+        'Core Durable Goods Orders MoM': '근원 내구재 주문 (전월대비)',
+        'Durable Goods Orders MoM': '내구재 주문 (전월대비)',
+        'Durable Goods': '내구재 주문',
+
+        'Industrial Production MoM': '산업생산 (전월대비)',
+        'Industrial Production': '산업생산',
+
+        'Real GDP QoQ Prel': '실질 GDP 예비치 (전분기대비)',
+        'Real GDP QoQ Final': '실질 GDP 확정치 (전분기대비)',
+        'Real GDP QoQ': '실질 GDP (전분기대비)',
+        'GDP Price Index': 'GDP 물가지수',
+        'GDP': '국내총생산 (GDP)',
+
+        // 6. 연준(Fed) 및 기타 지표
+        'Fed Chair Powell Speech': '파월 연준 의장 연설',
+        'Fed Chair Powell': '파월 연준 의장 연설',
+        'FOMC Meeting Minutes': 'FOMC 회의록 공개',
+        'FOMC': 'FOMC 금리결정 및 성명서',
+        'Interest Rate Decision': '기준 금리 결정',
+        'Interest Rate': '기준 금리 결정',
+        
+        'Trade Balance': '무역수지',
+        'Crude Oil Inventories': '주간 원유재고',
+        'Crude Oil': '주간 원유재고',
+        'Personal Spending': '개인 소비'
     };
 
     try {
@@ -789,7 +898,6 @@ async function fetchEconomicCalendar() {
                 month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
             });
 
-            // 데이터가 소문자로 들어오더라도 오류가 나지 않도록 소문자로 통일하여 검사하는 로직을 추가했습니다.
             const currentImpact = event.impact ? event.impact.toLowerCase() : '';
             
             const impactColor = currentImpact === 'high' ? '#ff4b4b' : (currentImpact === 'medium' ? '#f39c12' : '#aaaaaa');
@@ -816,8 +924,7 @@ async function fetchEconomicCalendar() {
 }
 
 fetchEconomicCalendar();
-setInterval(fetchEconomicCalendar, 300000);
-
+setInterval(fetchEconomicCalendar, 300000); // 5분마다 갱신
 
 </script>
 </body>

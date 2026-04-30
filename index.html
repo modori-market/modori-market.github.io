@@ -163,8 +163,18 @@
             </div>
         </div>
 
+</div>
+        
+
         <div class="card" style="grid-column: span 2;">
-    <h3>환율 및 가상자산 실시간 시세</h3>
+            <h3>실시간 미국 경제 전 지표 (자동 번역)</h3>
+            <div id="economic-calendar" style="margin-top: 15px; height: 500px; overflow-y: auto; padding-right: 10px;">
+                <div class="sub-data">지표를 불러오는 중입니다...</div>
+            </div>
+        </div>
+
+<div class="card" style="grid-column: span 2;">
+    <h3>환율, 가상자산 및 금 실시간 시세</h3>
     
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 35px; margin-top: 15px; padding-bottom: 20px;">
         
@@ -195,6 +205,27 @@
                 <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
                 {
                 "symbol": "BINANCE:BTCUSDT",
+                "width": "100%",
+                "height": "100%",
+                "locale": "kr",
+                "dateRange": "1M",
+                "colorTheme": "dark",
+                "isTransparent": true,
+                "autosize": true,
+                "largeChartUrl": ""
+                }
+                </script>
+            </div>
+        </div>
+        
+        <!-- 새롭게 추가된 금(Gold) 차트 영역 -->
+        <div style="width: 100%;">
+            <div class="sub-data" style="margin-bottom: 10px; color: #f1c40f;">▶ 국제 금값 (XAU/USD)</div>
+            <div class="tradingview-widget-container" style="height: 250px;">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                {
+                "symbol": "TVC:GOLD",
                 "width": "100%",
                 "height": "100%",
                 "locale": "kr",
@@ -328,7 +359,7 @@
             </div>
         </div>
 
-        <div class="card">
+<div class="card">
             <h3>KODEX 코스닥150 레버리지</h3>
             <div style="margin-top: 15px;">
                 <span class="sub-data">현재가</span>
@@ -344,11 +375,11 @@
                     <div id="kodex-rsi" class="data-point">로딩 중...</div>
                 </div>
             </div>
-        </div>
+</div>
 
 
 
-        <div class="card" style="grid-column: span 2;">
+<div class="card" style="grid-column: span 2;">
     <h3>주요 빅테크 기업 실적 발표 일정</h3>
     <!-- height 값을 350px에서 550px로 늘려 세로 공간을 충분히 확보했습니다. -->
     <div id="earnings-calendar" style="margin-top: 15px; height: 1000px; overflow-y: auto; padding-right: 10px;">
@@ -356,8 +387,12 @@
     </div>
 </div>
 
+
+
+
 <div class="card" style="grid-column: 1 / -1; grid-row: span 2;">
     <h3>실시간 국내외 주요 언론사 뉴스</h3>
+
     <div style="display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap;">
 
         <div style="flex: 1; min-width: 300px;">

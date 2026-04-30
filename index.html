@@ -405,18 +405,19 @@
 <script>
 // ■ 1. KODEX 및 정밀 RSI (SMA) 자동 수집 로직
 async function fetchKodexData() {
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtxh-v_QZHImfjP05zw7k16o-jTnO05KmVvoIUUh3B7UKbIIt9VVPIhEx3l6MEtQlMdtmvG-bK4Eh/pub?gid=0&single=true&output=csv';
+    // 넷리파이에 새로 개통한 KODEX 전용 직통 파이프라인으로 연결합니다.
+    const targetUrl = '/api/kodex?t=' + new Date().getTime();
     
-    // 브라우저가 옛날 데이터를 기억하지 못하도록 시간값을 붙여 최신화합니다.
-    const targetUrl = sheetUrl + '&t=' + new Date().getTime();
-    
-    // [핵심 해결] 고장난 외부 프록시(codetabs) 포장지를 찢어버리고 구글 시트로 '직통' 연결합니다.
     try {
         const response = await fetch(targetUrl);
-        if (!response.ok) throw new Error('구글 시트 응답 지연');
+        if (!response.ok) throw new Error('넷리파이 서버 응답 지연');
         
         const data = await response.text();
-        if (!data || data.includes('Error')) throw new Error('데이터 로드 실패');
+        
+        // 구글이 정상적인 CSV 데이터가 아닌 HTML 로그인/에러 웹페이지를 던졌다면 즉시 차단하고 원인 출력
+        if (data.toLowerCase().includes('<html') || data.toLowerCase().includes('!doctype')) {
+            throw new Error('구글 시트 접근 거부 (문서 공유 설정을 확인해 주세요)');
+        }
         
         const cleanData = data.replace(/"/g, '');
         const rows = cleanData.split(/\r?\n/);
@@ -427,31 +428,27 @@ async function fetchKodexData() {
             if (rows[i].trim() === '') continue;
             
             const parts = rows[i].split(',');
-            // 콤마 제거 및 공백 제거 후 숫자로 변환
             const priceStr = parts[parts.length - 1].replace(/,/g, '').trim();
             const price = parseFloat(priceStr);
             
             if (!isNaN(price) && price > 0) {
                 prices.push(price);
-                // 시트에 있는 첫 번째 열(날짜 텍스트)을 그대로 가져옵니다.
                 latestDate = parts[0]; 
             }
         }
         
         if (prices.length < 20) {
-            document.getElementById('kodex-price').innerText = '데이터 갱신중 (' + prices.length + ')';
+            // 데이터가 모자랄 경우 실제 가져온 텍스트의 일부를 화면에 띄워 직관적인 오류 파악을 돕습니다.
+            document.getElementById('kodex-price').innerText = '데이터 오류: ' + data.substring(0, 20) + '...';
             return;
         }
         
         const currentPrice = prices[prices.length - 1];
-        
-        // 글자를 임의로 자르지 않고, 앞뒤 공백만 깔끔하게 지운 원본 텍스트를 사용
         const displayDate = latestDate.trim();
         
         const priceHtml = currentPrice.toLocaleString() + '원 <span style="font-size: 0.9rem; color: #888; font-weight: normal; margin-left: 8px;">(' + displayDate + ' 기준)</span>';
         document.getElementById('kodex-price').innerHTML = priceHtml;
         
-        // 20일 이동평균선 및 이격도 계산
         let sum20 = 0;
         for (let i = prices.length - 20; i < prices.length; i++) sum20 += prices[i];
         const ma20 = sum20 / 20;
@@ -461,7 +458,6 @@ async function fetchKodexData() {
         disparityEl.innerText = disparity.toFixed(2) + '%';
         disparityEl.style.color = disparity > 100 ? '#ff4b4b' : '#4b91ff';
         
-        // RSI (14일) 계산 로직
         let sumGain = 0;
         let sumLoss = 0;
         
@@ -491,6 +487,7 @@ async function fetchKodexData() {
         document.getElementById('kodex-rsi').innerText = '--';
     }
 }
+
 
 // ■ 2. 28개 대장주 실적 발표 및 결과 자동 수집 로직
 async function fetchEarnings() {

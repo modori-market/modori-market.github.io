@@ -1,1 +1,2 @@
 /api/vix [https://query1.finance.yahoo.com/v8/finance/chart/](https://query1.finance.yahoo.com/v8/finance/chart/)^VIX?interval=1m 200
+/api/kodex [https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtxh-v_QZHImfjP05zw7k16o-jTnO05KmVvoIUUh3B7UKbIIt9VVPIhEx3l6MEtQlMdtmvG-bK4Eh/pub?gid=0&single=true&output=csv](https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtxh-v_QZHImfjP05zw7k16o-jTnO05KmVvoIUUh3B7UKbIIt9VVPIhEx3l6MEtQlMdtmvG-bK4Eh/pub?gid=0&single=true&output=csv) 200

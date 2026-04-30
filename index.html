@@ -406,20 +406,38 @@
 // ■ 1. KODEX 및 정밀 RSI (SMA) 자동 수집 로직
 async function fetchKodexData() {
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtxh-v_QZHImfjP05zw7k16o-jTnO05KmVvoIUUh3B7UKbIIt9VVPIhEx3l6MEtQlMdtmvG-bK4Eh/pub?gid=0&single=true&output=csv';
-    const targetUrl = sheetUrl + '&t=' + new Date().getTime();
     
-    // VIX 지표를 살려냈던 확실한 프록시(allorigins 원본 추출)로 KODEX도 통일합니다.
-    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
-    
+    // [핵심] 애드블록 및 방화벽 차단을 무력화하는 3중 우회 경로 세팅
+    const routes = [
+        sheetUrl, // 1순위: 구글 순정 직통 (가장 빠름)
+        'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(sheetUrl), // 2순위: Codetabs 우회망
+        'https://thingproxy.freeboard.io/fetch/' + sheetUrl // 3순위: Thingproxy 우회망
+    ];
+
+    let csvData = null;
+
+    // 경로를 하나씩 찔러보며 성공할 때까지 강행 돌파
+    for (let url of routes) {
+        try {
+            const response = await fetch(url, { cache: 'no-store' });
+            if (response.ok) {
+                const text = await response.text();
+                // 정상적인 CSV 데이터(콤마 포함, HTML 아님)인지 엄격히 검증
+                if (text && !text.toLowerCase().includes('<html') && text.includes(',')) {
+                    csvData = text;
+                    break; // 데이터 확보 시 즉시 루프 탈출
+                }
+            }
+        } catch (e) {
+            continue; // 에러(Failed to fetch) 발생 시 군말 없이 다음 경로로 이동
+        }
+    }
+
     try {
-        const response = await fetch(proxyUrl, { cache: 'no-store' });
-        if (!response.ok) throw new Error('서버 응답 지연');
-        
-        const data = await response.text();
-        
-        if (!data || data.includes('<html')) throw new Error('데이터 로드 실패');
-        
-        const cleanData = data.replace(/"/g, '');
+        // 3개 경로가 모두 막혔을 경우의 최후 방어선
+        if (!csvData) throw new Error('모든 통신망 차단됨 (애드블록 확인 요망)');
+
+        const cleanData = csvData.replace(/"/g, '');
         const rows = cleanData.split(/\r?\n/);
         const prices = [];
         let latestDate = ''; 

@@ -775,7 +775,8 @@ async function fetchEconomicCalendar() {
         'Housing': '주택 지표',
         'Consumer Sentiment': '소비자 심리지수',
         'Durable Goods': '내구재 주문',
-        'Personal Spending': '개인 소비'
+        'Personal Spending': '개인 소비',
+        'Interest Rate': '금리'
     };
 
     try {
@@ -783,8 +784,8 @@ async function fetchEconomicCalendar() {
         const data = await response.json();
         const events = data.economicCalendar;
 
-        // 필터링 없이 미국(US) 데이터만 모두 추출
-        const usEvents = events.filter(e => e.country === 'US');
+        // [핵심 변경 사항] 미국(US) 데이터이면서, 중요도가 'low' 또는 'Low'가 아닌 것들만 엄선하여 추출합니다.
+        const usEvents = events.filter(e => e.country === 'US' && e.impact !== 'low' && e.impact !== 'Low');
         
         let htmlContent = '';
         
@@ -801,7 +802,7 @@ async function fetchEconomicCalendar() {
                 month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
             });
 
-            // 중요도(impact)에 따라 바 색상을 다르게 표시 (Low/Medium/High 모두 포함)
+            // 중요도(impact)에 따라 바 색상을 다르게 표시
             const impactColor = event.impact === 'High' ? '#ff4b4b' : (event.impact === 'Medium' ? '#f39c12' : '#aaaaaa');
 
             htmlContent += `
@@ -817,7 +818,8 @@ async function fetchEconomicCalendar() {
             `;
         });
 
-        calendarEl.innerHTML = htmlContent || '<div class="sub-data">현재 예정된 미국 지표가 없습니다.</div>';
+        // low 지표가 다 빠지고 Medium/High 지표마저 없을 경우를 대비한 문구 변경
+        calendarEl.innerHTML = htmlContent || '<div class="sub-data">현재 예정된 주요(Medium/High) 지표가 없습니다.</div>';
 
     } catch (error) {
         calendarEl.innerHTML = '<div class="sub-data">지표 로드 실패</div>';
@@ -826,7 +828,6 @@ async function fetchEconomicCalendar() {
 
 fetchEconomicCalendar();
 setInterval(fetchEconomicCalendar, 300000); // 5분마다 갱신
-
 
 
 </script>

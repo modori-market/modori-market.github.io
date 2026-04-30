@@ -405,85 +405,81 @@
 <script>
 // ■ 1. KODEX 및 정밀 RSI (SMA) 자동 수집 로직
 async function fetchKodexData() {
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtxh-v_QZHImfjP05zw7k16o-jTnO05KmVvoIUUh3B7UKbIIt9VVPIhEx3l6MEtQlMdtmvG-bK4Eh/pub?gid=0&single=true&output=csv';
+    const targetUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/233740.KS?interval=1d&range=2mo&t=' + new Date().getTime();
+    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
     
-    // 브라우저 캐시를 우회하기 위해 주소 뒤에 난수만 살짝 붙여줍니다.
-    const targetUrl = sheetUrl + '&t=' + new Date().getTime();
-    
-    // 가장 성공률이 높은 우회망 3개를 순차적으로 찌릅니다.
-    const routes = [
-        'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl),
-        'https://corsproxy.io/?' + encodeURIComponent(targetUrl),
-        targetUrl
-    ];
-
-    let csvData = null;
-
-    for (let url of routes) {
-        try {
-            // [핵심 해결] 까다로운 보안 검사를 유발했던 옵션을 제거하고 순수하게 데이터만 요청합니다.
-            const response = await fetch(url); 
-            if (response.ok) {
-                const text = await response.text();
-                // HTML 에러 페이지가 아닌 진짜 콤마(,)가 포함된 CSV 데이터인지 검증합니다.
-                if (text && !text.toLowerCase().includes('<html') && text.includes(',')) {
-                    csvData = text;
-                    break;
-                }
-            }
-        } catch (e) {
-            continue; 
-        }
-    }
-
     try {
-        if (!csvData) throw new Error('브라우저 광고 차단기능을 꺼주세요');
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error('야후 파이낸스 응답 지연');
+        
+        const data = await response.json();
+        const result = data.chart.result[0];
+        const meta = result.meta;
+        
+        // 1. 현재가, 전일 종가 및 날짜 세팅
+        const currentPrice = meta.regularMarketPrice;
+        const previousClose = meta.previousClose; 
+        
+        const dateObj = new Date(meta.regularMarketTime * 1000);
+        const displayDate = dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
+        
+        // 2. 전일 대비 등락 수치 및 퍼센트 계산
+        const change = currentPrice - previousClose;
+        const changePercent = (change / previousClose) * 100;
+        
+        let changeText = '';
+        let changeColor = '#a3be8c';
 
-        const cleanData = csvData.replace(/"/g, '');
-        const rows = cleanData.split(/\r?\n/);
-        const prices = [];
-        let latestDate = ''; 
-        
-        for (let i = 1; i < rows.length; i++) {
-            if (rows[i].trim() === '') continue;
-            
-            const parts = rows[i].split(',');
-            const priceStr = parts[parts.length - 1].replace(/,/g, '').trim();
-            const price = parseFloat(priceStr);
-            
-            if (!isNaN(price) && price > 0) {
-                prices.push(price);
-                latestDate = parts[0]; 
-            }
+        if (change > 0) {
+            changeText = '▲ ' + change.toLocaleString() + '원 (' + changePercent.toFixed(2) + '%)';
+            changeColor = '#ff4b4b'; 
+        } else if (change < 0) {
+            changeText = '▼ ' + Math.abs(change).toLocaleString() + '원 (' + Math.abs(changePercent).toFixed(2) + '%)';
+            changeColor = '#4b91ff'; 
+        } else {
+            changeText = '- 0원 (0.00%)';
+            changeColor = '#a3be8c'; 
         }
+
+        // 화면 출력용 HTML 구성 (현재가 아래에 등락폭 배치)
+        const priceHtml = `
+            <div style="margin-bottom: 5px;">
+                ${currentPrice.toLocaleString()}원 
+                <span style="font-size: 0.9rem; color: #888; font-weight: normal; margin-left: 8px;">(${displayDate} 기준)</span>
+            </div>
+            <div style="font-size: 1.1rem; color: ${changeColor}; font-weight: bold;">
+                ${changeText}
+            </div>
+        `;
+        document.getElementById('kodex-price').innerHTML = priceHtml;
         
-        if (prices.length < 20) {
-            document.getElementById('kodex-price').innerText = '데이터 갱신중 (' + prices.length + ')';
+        // 3. 과거 종가 배열 (결측치 제거)
+        const closes = result.indicators.quote[0].close;
+        const validPrices = closes.filter(price => price !== null && price > 0);
+        
+        if (validPrices.length < 20) {
+            document.getElementById('kodex-price').innerText = '데이터 갱신중 (' + validPrices.length + ')';
             return;
         }
         
-        const currentPrice = prices[prices.length - 1];
-        const displayDate = latestDate.trim();
-        
-        const priceHtml = currentPrice.toLocaleString() + '원 <span style="font-size: 0.9rem; color: #888; font-weight: normal; margin-left: 8px;">(' + displayDate + ' 기준)</span>';
-        document.getElementById('kodex-price').innerHTML = priceHtml;
-        
+        // 4. 20일 이동평균선 및 이격도 계산
         let sum20 = 0;
-        for (let i = prices.length - 20; i < prices.length; i++) sum20 += prices[i];
+        for (let i = validPrices.length - 20; i < validPrices.length; i++) sum20 += validPrices[i];
         const ma20 = sum20 / 20;
-        const disparity = (currentPrice / ma20) / 0.01;
+        const disparity = (currentPrice / ma20) * 100;
         
         const disparityEl = document.getElementById('kodex-disparity');
         disparityEl.innerText = disparity.toFixed(2) + '%';
         disparityEl.style.color = disparity > 100 ? '#ff4b4b' : '#4b91ff';
         
+        // 5. RSI (14일) 계산 로직
         let sumGain = 0;
         let sumLoss = 0;
         
-        for (let i = prices.length - 14; i < prices.length; i++) {
-            const change = prices[i] - prices[i - 1];
-            if (change > 0) sumGain += change;
-            else if (change < 0) sumLoss -= change; 
+        for (let i = validPrices.length - 14; i < validPrices.length; i++) {
+            const dayChange = validPrices[i] - validPrices[i - 1];
+            if (dayChange > 0) sumGain += dayChange;
+            else if (dayChange < 0) sumLoss -= dayChange; 
         }
         
         let rsi = 0;
@@ -606,11 +602,12 @@ async function fetchEarnings() {
 
     // ■ VIX 지수 (가장 안정적인 AllOrigins JSON 방식으로 원복)
 async function fetchVixData() {
-    const targetUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/^VIX?interval=1m';
+    // [핵심 변경] 주소 맨 끝에 &t=시간값 을 붙여서 프록시 서버의 캐시(저장된 과거 데이터)를 완전히 박살냅니다.
+    const targetUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/^VIX?interval=1m&t=' + new Date().getTime();
     const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
     
     try {
-        const response = await fetch(proxyUrl);
+        const response = await fetch(proxyUrl, { cache: 'no-store' });
         const data = await response.json();
         const result = data.chart.result[0];
         const meta = result.meta;
@@ -618,7 +615,7 @@ async function fetchVixData() {
         const currentPrice = meta.regularMarketPrice.toFixed(2);
         const previousClose = meta.previousClose;
         const change = (currentPrice - previousClose).toFixed(2);
-        const changePercent = ((change / previousClose) / 0.01).toFixed(2);
+        const changePercent = ((change / previousClose) * 100).toFixed(2);
         
         document.getElementById('vix-price').style.fontSize = '2.2rem';
         document.getElementById('vix-price').innerText = currentPrice;
@@ -775,7 +772,7 @@ fetchNews();
 setInterval(fetchNews,        30000); 
 
 fetchVixData();      
-setInterval(fetchVixData,     60000);  // 1분
+setInterval(fetchVixData,     30000);  // 1분
 
 
 async function fetchEconomicCalendar() {

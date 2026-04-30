@@ -3,466 +3,385 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>투자 대시보드</title>
+    <title>종합 투자 대시보드</title>
     <style>
-        /* 기본 스타일 및 어두운 테마 */
+        /* 블룸버그 터미널 스타일 전체 배경 및 폰트 세팅 */
         body {
-            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-            background-color: #1a1e26; /* 매우 어두운 회색 */
-            color: #eceff4; /* 매우 밝은 회색 텍스트 */
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 30px 20px;
+        }
+
+        /* 제목 스타일 */
+        h1 {
+            color: #eceff4;
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 2rem;
+            letter-spacing: 1px;
+        }
+
+        /* 메인 그리드 뼈대: 데스크탑 2칸, 태블릿/모바일 1칸 */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            align-items: stretch;
+        }
+
+        /* 각각의 데이터 카드 디자인 (다크 테마) */
+        .card {
+            background: #1e1e24;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            border: 1px solid #2a2a35;
             display: flex;
             flex-direction: column;
-            align-items: center;
-        }
-
-        /* 메인 컨테이너 (그리드 레이아웃) */
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            width: 100%;
-            max-width: 1200px;
-            margin-top: 20px;
-        }
-
-        /* 개별 카드 스타일 */
-        .card {
-            background-color: #2e3440; /* 카드 배경 */
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            padding: 20px;
-            transition: transform 0.2s;
-            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.6);
         }
 
-        /* 카드 제목 스타일 */
+        /* 가로로 꽉 차야 하는 영역 (뉴스, 3단 차트 등) */
+        .full-width {
+            grid-column: span 2;
+        }
+
+        /* 카드 제목 디자인 */
         .card h3 {
             margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.1em;
-            color: #d8dee9;
-            border-bottom: 1px solid #4c566a;
-            padding-bottom: 8px;
+            margin-bottom: 20px;
+            color: #ffffff;
+            font-size: 1.25rem;
+            border-bottom: 1px solid #333;
+            padding-bottom: 12px;
+            font-weight: 600;
         }
 
-        /* 데이터 내용 스타일 */
+        /* 내부 데이터 소제목 */
+        .sub-data {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #81899a;
+        }
+
+        /* 데이터 강조 포인트 */
         .data-point {
             font-size: 1.5em;
             font-weight: bold;
             color: #eceff4;
         }
 
-        .sub-data {
-            font-size: 0.9em;
-            color: #81899a;
+        /* VIX 링크 박스 호버 효과 */
+        .vix-link-box {
+            text-decoration: none;
+            display: block;
+            transition: opacity 0.2s;
+        }
+        .vix-link-box:hover {
+            opacity: 0.8;
         }
 
-        /* 실시간 차트 자리 스타일 */
-        .chart-placeholder {
-            width: 100%;
-            height: 200px;
-            background-color: #3b4252;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 8px;
-            color: #a3be8c;
-            font-size: 0.9em;
+        /* 로딩 스피너 애니메이션 */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #4b91ff;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* 텍스트 내용이 많은 카드 스타일 (분석, 기사 등) */
-        .text-card p {
-            font-size: 0.95em;
-            line-height: 1.6;
-            color: #eceff4;
-            margin: 5px 0;
-        }
+        /* 스크롤바 디자인 (다크 모드 전용) */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e1e24; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #777; }
 
-        .important {
-            color: #bf616a; /* 중요한 정보는 빨간색 계열 */
-            font-weight: bold;
-        }
-
-        .positive {
-            color: #a3be8c; /* 긍정 정보는 초록색 계열 */
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-                overflow-x: hidden;
-            }
-            
-            .card {
-                grid-column: 1 / -1 !important;
-                width: 100%;
-                box-sizing: border-box;
-                margin-bottom: 20px;
-            }
-            
-            .tradingview-widget-container {
-                width: 100% !important;
-            }
+        /* 모바일 반응형 처리 */
+        @media (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
         }
     </style>
 </head>
 <body>
 
-    <h1 style="color: #eceff4;">종합 투자 대시보드</h1>
+    <h1>종합 투자 대시보드</h1>
 
-    <div class="dashboard">
+    <div class="dashboard-container">
 
+        <!-- 1. 환율, 가상자산, 금 (전체 너비 사용, 최상단 배치) -->
+        <div class="card full-width">
+            <h3>환율, 가상자산 및 금 실시간 시세</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 35px; margin-top: 5px;">
+                <div style="width: 100%;">
+                    <div class="sub-data" style="margin-bottom: 10px; color: #4b91ff;">▶ 원/달러 환율 (USD/KRW)</div>
+                    <div class="tradingview-widget-container" style="height: 250px;">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                        { "symbol": "FX_IDC:USDKRW", "width": "100%", "height": "100%", "locale": "kr", "dateRange": "1M", "colorTheme": "dark", "isTransparent": true, "autosize": true, "largeChartUrl": "" }
+                        </script>
+                    </div>
+                </div>
+                <div style="width: 100%;">
+                    <div class="sub-data" style="margin-bottom: 10px; color: #f39c12;">▶ 비트코인 (BTC/USDT)</div>
+                    <div class="tradingview-widget-container" style="height: 250px;">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                        { "symbol": "BINANCE:BTCUSDT", "width": "100%", "height": "100%", "locale": "kr", "dateRange": "1M", "colorTheme": "dark", "isTransparent": true, "autosize": true, "largeChartUrl": "" }
+                        </script>
+                    </div>
+                </div>
+                <div style="width: 100%;">
+                    <div class="sub-data" style="margin-bottom: 10px; color: #f1c40f;">▶ 국제 금값 (XAU/USD)</div>
+                    <div class="tradingview-widget-container" style="height: 250px;">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                        { "symbol": "TVC:GOLD", "width": "100%", "height": "100%", "locale": "kr", "dateRange": "1M", "colorTheme": "dark", "isTransparent": true, "autosize": true, "largeChartUrl": "" }
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 시장 공포 및 변동성 -->
+        <div class="card">
+            <h3>시장 공포 및 변동성 (Weekly Trend)</h3>
+            <div style="margin-bottom: 25px;">
+                <div class="sub-data" style="margin-bottom: 10px;">옵션 풋/콜 비율 (USI:PCC) — <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" style="color:#4b91ff; font-size:0.8rem; text-decoration:none;">CNN Fear & Greed ↗</a></div>
+                <div class="tradingview-widget-container">
+                    <div class="tradingview-widget-container__widget"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                    {"symbol":"USI:PCC","width":"100%","height":"150","locale":"kr","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":false}
+                    </script>
+                </div>
+            </div>
+            <div>
+                <div class="sub-data" style="margin-bottom: 10px;">
+                    VIX (S&P 500 변동성 지수)
+                    <span style="font-size:0.75rem; background:#3b4252; padding:2px 6px; border-radius:4px; color:#888; margin-left:5px;">클릭 시 차트 이동</span>
+                </div>
+                <a class="vix-link-box" href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank" title="Yahoo Finance — VIX 상세 차트">
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px; background-color: #3b4252; border-radius: 8px; border: 1px solid #4c566a;">
+                        <div>
+                            <div class="sub-data" style="color: #d8dee9; margin-bottom: 5px;">▶ 현재 지수</div>
+                            <div id="vix-price" style="font-size: 2.2rem; font-weight: bold; color: #e5e9f0;">통신중...</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="sub-data" style="color: #888; margin-bottom: 5px;">전일 대비</div>
+                            <div id="vix-change" style="font-size: 1.2rem; font-weight: bold; color: #a3be8c;">--</div>
+                            <div style="margin-top: 8px; font-size: 0.75rem; color: #4b91ff; opacity: 0.7;">↗ 상세 차트</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div style="margin-top: 20px; padding: 15px; background-color: #2e3440; border: 1px solid #4c566a; border-radius: 8px; font-size: 0.9rem; color: #d8dee9; line-height: 1.7;">
+                <div style="color: #88c0d0; font-weight: bold; margin-bottom: 10px; font-size: 1rem;">■ 실시간 매매 판단 가이드 (역발상 전략)</div>
+                <div style="background-color: #3b4252; padding: 10px; border-radius: 5px; margin-bottom: 12px;">
+                    <span style="color: #ff4b4b; font-weight: bold;">▶ 적극 매수 구간 (남들 던질 때 줍는 자리)</span><br>
+                    → 조건: <span style="color: #eceff4;">PCC 1.0 이상 + VIX 20 이상</span><br>
+                    → 판단: 대중의 공포가 극에 달한 시점, 지수 ETF 분할 매수 가동
+                </div>
+                <div style="background-color: #3b4252; padding: 10px; border-radius: 5px;">
+                    <span style="color: #4b91ff; font-weight: bold;">▶ 매도 및 주의 구간 (모두가 환호하는 자리)</span><br>
+                    → 조건: <span style="color: #eceff4;">PCC 0.7 이하 + VIX 15 이하</span><br>
+                    → 판단: 시장 과열 및 조정 가능성 상존, 고점 분할 매도 고려
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 미증시 Overview -->
         <div class="card chart-card">
             <h3>미증시 (S&P 500, Nasdaq 100)</h3>
-            <div class="tradingview-widget-container">
-  <div class="tradingview-widget-container__widget"></div>
-  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
-  {
-  "colorTheme": "dark",
-  "dateRange": "12M",
-  "showChart": true,
-  "locale": "kr",
-  "width": "100%",
-  "height": "350",
-  "largeChartUrl": "",
-  "isTransparent": true,
-  "showSymbolLogo": true,
-  "showFloatingTooltip": false,
-  "tabs": [
-    {
-      "title": "미증시",
-      "symbols": [
-        {
-          "s": "FOREXCOM:SPXUSD",
-          "d": "S&P500"
-        },
-        {
-          "s": "FOREXCOM:NAS100",
-          "d": "나스닥100"
-        }
-      ],
-      "originalTitle": "Indices"
-    }
-  ]
-}
-  </script>
-</div>
-        </div>
-        
-
-        <div class="card" style="grid-column: span 2;">
-            <h3>실시간 미국 경제 전 지표 (자동 번역)</h3>
-            <div id="economic-calendar" style="margin-top: 15px; height: 500px; overflow-y: auto; padding-right: 10px;">
-                <div class="sub-data">지표를 불러오는 중입니다...</div>
-            </div>
-        </div>
-
-</div>
-        
-
-        <div class="card" style="grid-column: span 2;">
-            <h3>실시간 미국 경제 전 지표 (자동 번역)</h3>
-            <div id="economic-calendar" style="margin-top: 15px; height: 500px; overflow-y: auto; padding-right: 10px;">
-                <div class="sub-data">지표를 불러오는 중입니다...</div>
-            </div>
-        </div>
-
-<div class="card" style="grid-column: span 2;">
-    <h3>환율, 가상자산 및 금 실시간 시세</h3>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 35px; margin-top: 15px; padding-bottom: 20px;">
-        
-        <div style="width: 100%;">
-            <div class="sub-data" style="margin-bottom: 10px; color: #4b91ff;">▶ 원/달러 환율 (USD/KRW)</div>
-            <div class="tradingview-widget-container" style="height: 250px;">
+            <div class="tradingview-widget-container" style="height:100%;">
                 <div class="tradingview-widget-container__widget"></div>
-                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
                 {
-                "symbol": "FX_IDC:USDKRW",
-                "width": "100%",
-                "height": "100%",
-                "locale": "kr",
-                "dateRange": "1M",
-                "colorTheme": "dark",
-                "isTransparent": true,
-                "autosize": true,
-                "largeChartUrl": ""
+                "colorTheme": "dark", "dateRange": "12M", "showChart": true, "locale": "kr", "width": "100%", "height": "100%", "largeChartUrl": "", "isTransparent": true, "showSymbolLogo": true, "showFloatingTooltip": false,
+                "tabs": [ { "title": "미증시", "symbols": [ { "s": "FOREXCOM:SPXUSD", "d": "S&P500" }, { "s": "FOREXCOM:NAS100", "d": "나스닥100" } ], "originalTitle": "Indices" } ]
                 }
                 </script>
             </div>
         </div>
 
-        <div style="width: 100%;">
-            <div class="sub-data" style="margin-bottom: 10px; color: #f39c12;">▶ 비트코인 (BTC/USDT)</div>
-            <div class="tradingview-widget-container" style="height: 250px;">
-                <div class="tradingview-widget-container__widget"></div>
-                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
-                {
-                "symbol": "BINANCE:BTCUSDT",
-                "width": "100%",
-                "height": "100%",
-                "locale": "kr",
-                "dateRange": "1M",
-                "colorTheme": "dark",
-                "isTransparent": true,
-                "autosize": true,
-                "largeChartUrl": ""
-                }
-                </script>
-            </div>
-        </div>
-        
-        <!-- 새롭게 추가된 금(Gold) 차트 영역 -->
-        <div style="width: 100%;">
-            <div class="sub-data" style="margin-bottom: 10px; color: #f1c40f;">▶ 국제 금값 (XAU/USD)</div>
-            <div class="tradingview-widget-container" style="height: 250px;">
-                <div class="tradingview-widget-container__widget"></div>
-                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
-                {
-                "symbol": "TVC:GOLD",
-                "width": "100%",
-                "height": "100%",
-                "locale": "kr",
-                "dateRange": "1M",
-                "colorTheme": "dark",
-                "isTransparent": true,
-                "autosize": true,
-                "largeChartUrl": ""
-                }
-                </script>
-            </div>
-        </div>
-        
-    </div>
-</div>
-
-<div class="card">
-    <h3>시장 공포 및 변동성 (Weekly Trend)</h3>
-
-    <div style="margin-bottom: 25px; position: relative;">
-        <div class="sub-data" style="margin-bottom: 10px;">옵션 풋/콜 비율 (USI:PCC) — <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" style="color:#4b91ff; font-size:0.8rem;">CNN Fear & Greed ↗</a></div>
-        <div class="tradingview-widget-container">
-            <div class="tradingview-widget-container__widget"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
-            {"symbol":"USI:PCC","width":"100%","height":"150","locale":"kr","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":false}
-            </script>
-        </div>
-    </div>
-
-    <div>
-        <div class="sub-data" style="margin-bottom: 10px;">
-            VIX (S&P 500 변동성 지수)
-            <span class="vix-badge">클릭 시 차트 이동</span>
-        </div>
-
-        <a class="vix-link-box"
-           href="https://finance.yahoo.com/quote/%5EVIX/"
-           target="_blank"
-           title="Yahoo Finance — VIX 상세 차트">
-            <div style="display: flex; align-items: center; justify-content: space-between;
-                        padding: 20px; background-color: #3b4252; border-radius: 8px;
-                        border: 1px solid #4c566a;">
-                <div>
-                    <div class="sub-data" style="color: #d8dee9; margin-bottom: 5px;">▶ 현재 지수</div>
-                    <div id="vix-price" style="font-size: 2.2rem; font-weight: bold; color: #e5e9f0;">통신중...</div>
-                </div>
-                <div style="text-align: right;">
-                    <div class="sub-data" style="color: #888; margin-bottom: 5px;">전일 대비</div>
-                    <div id="vix-change" style="font-size: 1.2rem; font-weight: bold; color: #a3be8c;">--</div>
-                    <div style="margin-top: 8px; font-size: 0.75rem; color: #4b91ff; opacity: 0.7;">↗ 상세 차트</div>
-                </div>
-            </div>
-        </a>
-    </div>
-
-    <div style="margin-top: 20px; padding: 15px; background-color: #2e3440; border: 1px solid #4c566a; border-radius: 8px; font-size: 0.9rem; color: #d8dee9; line-height: 1.7;">
-        <div style="color: #88c0d0; font-weight: bold; margin-bottom: 10px; font-size: 1rem;">■ 실시간 매매 판단 가이드 (역발상 전략)</div>
-        
-        <div style="background-color: #3b4252; padding: 10px; border-radius: 5px; margin-bottom: 12px;">
-            <span style="color: #ff4b4b; font-weight: bold;">▶ 적극 매수 구간 (남들 던질 때 줍는 자리)</span><br>
-            → 조건: <span style="color: #eceff4;">PCC 1.0 이상 + VIX 20 이상</span><br>
-            → 판단: 대중의 공포가 극에 달한 시점, 지수 ETF 분할 매수 가동
-        </div>
-        
-        <div style="background-color: #3b4252; padding: 10px; border-radius: 5px;">
-            <span style="color: #4b91ff; font-weight: bold;">▶ 매도 및 주의 구간 (모두가 환호하는 자리)</span><br>
-            → 조건: <span style="color: #eceff4;">PCC 0.7 이하 + VIX 15 이하</span><br>
-            → 판단: 시장 과열 및 조정 가능성 상존, 고점 분할 매도 고려
-        </div>
-    </div>
-</div>
-
-
-<div class="card" style="grid-column: span 1;">
-            <h3>미국 핵심 ETF (SOXL / SOXX) RSI 지표</h3>
-            <div class="sub-data" style="margin-top: -10px; margin-bottom: 15px; color: #888;">웰더스 방식 RSI (Wilder's Smoothing)</div>
-
-            <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 10px;">
-                <div style="height: 250px;">
-                    <div class="sub-data" style="margin-bottom: 5px;">SOXL 가격 흐름 및 하단 RSI (14) 수치</div>
-                    <div class="tradingview-widget-container" style="height:100%;width:100%">
-                      <div id="tv_soxl" style="height:calc(100% - 32px);width:100%"></div>
-                      <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-                      <script type="text/javascript">
-                      new TradingView.widget({
-                      "autosize": true,
-                      "symbol": "AMEX:SOXL",
-                      "interval": "D",
-                      "timezone": "Asia/Seoul",
-                      "theme": "dark",
-                      "style": "2",
-                      "locale": "kr",
-                      "enable_publishing": false,
-                      "hide_top_toolbar": true,
-                      "hide_legend": true,
-                      "save_image": false,
-                      "container_id": "tv_soxl",
-                      "studies": [
-                        "RSI@tv-basicstudies"
-                      ]
-                    });
-                      </script>
-                    </div>
-                    </div>
-
-                <div style="height: 250px;">
-                    <div class="sub-data" style="margin-bottom: 5px;">SOXX 가격 흐름 및 하단 RSI (14) 수치</div>
-                    <div class="tradingview-widget-container" style="height:100%;width:100%">
-                      <div id="tv_soxx" style="height:calc(100% - 32px);width:100%"></div>
-                      <script type="text/javascript">
-                      new TradingView.widget({
-                      "autosize": true,
-                      "symbol": "NASDAQ:SOXX",
-                      "interval": "D",
-                      "timezone": "Asia/Seoul",
-                      "theme": "dark",
-                      "style": "2",
-                      "locale": "kr",
-                      "enable_publishing": false,
-                      "hide_top_toolbar": true,
-                      "hide_legend": true,
-                      "save_image": false,
-                      "container_id": "tv_soxx",
-                      "studies": [
-                        "RSI@tv-basicstudies"
-                      ]
-                    });
-                      </script>
-                    </div>
-                    </div>
-            </div>
-        </div>
-
-<div class="card">
+        <!-- 4. KODEX 코스닥150 -->
+        <div class="card">
             <h3>KODEX 코스닥150 레버리지</h3>
-            <div style="margin-top: 15px;">
+            <div style="margin-top: 5px;">
                 <span class="sub-data">현재가</span>
-                <div id="kodex-price" class="data-point">로딩 중...</div>
+                <div id="kodex-price" class="data-point" style="margin-top: 5px;">로딩 중...</div>
             </div>
-            <div style="display: flex; gap: 20px; margin-top: 15px;">
+            <div style="display: flex; gap: 20px; margin-top: 25px;">
                 <div style="flex: 1;">
                     <span class="sub-data">20일선 이격도</span>
-                    <div id="kodex-disparity" class="data-point">로딩 중...</div>
+                    <div id="kodex-disparity" class="data-point" style="margin-top: 5px;">로딩 중...</div>
                 </div>
                 <div style="flex: 1;">
                     <span class="sub-data">RSI (14일)</span>
-                    <div id="kodex-rsi" class="data-point">로딩 중...</div>
+                    <div id="kodex-rsi" class="data-point" style="margin-top: 5px;">로딩 중...</div>
                 </div>
             </div>
-</div>
+        </div>
 
+        <!-- 5. 미국 핵심 ETF SOXL/SOXX -->
+        <div class="card">
+            <h3>미국 핵심 ETF (SOXL / SOXX) RSI 지표</h3>
+            <div class="sub-data" style="margin-top: -10px; margin-bottom: 15px; color: #888;">웰더스 방식 RSI (Wilder's Smoothing)</div>
+            <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 10px; flex-grow: 1;">
+                <div style="height: 250px;">
+                    <div class="sub-data" style="margin-bottom: 5px;">SOXL 가격 흐름 및 하단 RSI (14) 수치</div>
+                    <div class="tradingview-widget-container" style="height:calc(100% - 25px);width:100%">
+                      <div id="tv_soxl" style="height:100%;width:100%"></div>
+                      <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                      <script type="text/javascript">
+                      new TradingView.widget({ "autosize": true, "symbol": "AMEX:SOXL", "interval": "D", "timezone": "Asia/Seoul", "theme": "dark", "style": "2", "locale": "kr", "enable_publishing": false, "hide_top_toolbar": true, "hide_legend": true, "save_image": false, "container_id": "tv_soxl", "studies": [ "RSI@tv-basicstudies" ] });
+                      </script>
+                    </div>
+                </div>
+                <div style="height: 250px;">
+                    <div class="sub-data" style="margin-bottom: 5px;">SOXX 가격 흐름 및 하단 RSI (14) 수치</div>
+                    <div class="tradingview-widget-container" style="height:calc(100% - 25px);width:100%">
+                      <div id="tv_soxx" style="height:100%;width:100%"></div>
+                      <script type="text/javascript">
+                      new TradingView.widget({ "autosize": true, "symbol": "NASDAQ:SOXX", "interval": "D", "timezone": "Asia/Seoul", "theme": "dark", "style": "2", "locale": "kr", "enable_publishing": false, "hide_top_toolbar": true, "hide_legend": true, "save_image": false, "container_id": "tv_soxx", "studies": [ "RSI@tv-basicstudies" ] });
+                      </script>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- 6. 뉴스 (전체 너비 사용) -->
+        <div class="card full-width">
+            <h3>실시간 국내외 주요 언론사 뉴스</h3>
+            <div style="display: flex; gap: 25px; margin-top: 10px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 300px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div class="sub-data" style="color: #4b91ff;">▶ 국내 경제 주요 기사</div>
+                        <div style="display: flex; gap: 8px;">
+                            <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">매일경제</span>
+                            <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">한국경제</span>
+                        </div>
+                    </div>
+                    <div id="kr-news-container" style="padding-right: 10px;">
+                        <div class="sub-data"><div class="spinner"></div>국내 기사 수집 중...</div>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 300px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div class="sub-data" style="color: #a3be8c;">▶ 국내 보도 (미국/해외 증시)</div>
+                        <div style="display: flex; gap: 8px;">
+                            <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">한경/매경 번역본</span>
+                        </div>
+                    </div>
+                    <div id="kr-global-news-container" style="padding-right: 10px;">
+                        <div class="sub-data"><div class="spinner"></div>해외 증시 기사 수집 중...</div>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 300px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div class="sub-data" style="color: #ff4b4b;">▶ 글로벌 경제 (원문 기사)</div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">Bloomberg</span>
+                            <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">WSJ</span>
+                            <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">FT</span>
+                            <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">Economist</span>
+                        </div>
+                    </div>
+                    <div id="global-news-container" style="padding-right: 10px;">
+                        <div class="sub-data"><div class="spinner"></div>글로벌 원문 기사 수집 중...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-<div class="card" style="grid-column: span 2;">
-    <h3>주요 빅테크 기업 실적 발표 일정</h3>
-    <!-- height 값을 350px에서 550px로 늘려 세로 공간을 충분히 확보했습니다. -->
-    <div id="earnings-calendar" style="margin-top: 15px; height: 1000px; overflow-y: auto; padding-right: 10px;">
-        <div class="sub-data">실적 일정을 불러오는 중입니다...</div>
+        <!-- 7. 실적 발표 일정 -->
+        <div class="card">
+            <h3>주요 빅테크 기업 실적 발표 일정</h3>
+            <!-- 세로 공간을 550px로 통일하여 대칭을 맞춤 -->
+            <div id="earnings-calendar" style="margin-top: 5px; height: 1000px; overflow-y: auto; padding-right: 10px;">
+                <div class="sub-data"><div class="spinner"></div>실적 일정을 불러오는 중입니다...</div>
+            </div>
+        </div>
+
+        <!-- 8. 실시간 경제 지표 (중복 제거 완료) -->
+        <div class="card">
+            <h3>실시간 미국 경제 전 지표 (자동 번역)</h3>
+            <div id="economic-calendar" style="margin-top: 5px; height: 1000px; overflow-y: auto; padding-right: 10px;">
+                <div class="sub-data"><div class="spinner"></div>지표를 불러오는 중입니다...</div>
+            </div>
+        </div>
+
     </div>
-</div>
-
-
-
-
-<div class="card" style="grid-column: 1 / -1; grid-row: span 2;">
-    <h3>실시간 국내외 주요 언론사 뉴스</h3>
-
-    <div style="display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap;">
-
-        <div style="flex: 1; min-width: 300px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <div class="sub-data" style="color: #4b91ff;">▶ 국내 경제 주요 기사</div>
-                <div style="display: flex; gap: 8px;">
-                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">매일경제</span>
-                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">한국경제</span>
-                </div>
-            </div>
-            <div id="kr-news-container" style="padding-right: 10px;">
-                <div class="news-loading"><div class="spinner"></div>국내 기사 수집 중...</div>
-            </div>
-        </div>
-
-        <div style="flex: 1; min-width: 300px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <div class="sub-data" style="color: #a3be8c;">▶ 국내 보도 (미국/해외 증시)</div>
-                <div style="display: flex; gap: 8px;">
-                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">한경/매경 번역본</span>
-                </div>
-            </div>
-            <div id="kr-global-news-container" style="padding-right: 10px;">
-                <div class="news-loading"><div class="spinner"></div>해외 증시 기사 수집 중...</div>
-            </div>
-        </div>
-
-        <div style="flex: 1; min-width: 300px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <div class="sub-data" style="color: #ff4b4b;">▶ 글로벌 경제 (원문 기사)</div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">Bloomberg</span>
-                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">WSJ</span>
-                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">FT</span>
-                    <span style="font-size: 0.7rem; background: #3b4252; border: 1px solid #4c566a; border-radius: 4px; padding: 2px 7px; color: #81899a;">Economist</span>
-                </div>
-            </div>
-            <div id="global-news-container" style="padding-right: 10px;">
-                <div class="news-loading"><div class="spinner"></div>글로벌 원문 기사 수집 중...</div>
-            </div>
-        </div>
-        
-    </div>
-</div>
-
 
 <script>
 // ■ 1. KODEX 및 정밀 RSI (SMA) 자동 수집 로직
 async function fetchKodexData() {
-    const targetUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/233740.KS?interval=1d&range=2mo&t=' + new Date().getTime();
-    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+    const targetUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/233740.KS?interval=1d&range=2mo';
+    const ts = new Date().getTime();
     
+    const routes = [
+        `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&disableCache=true&t=${ts}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}&disableCache=true&t=${ts}`,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}&t=${ts}`
+    ];
+
+    let data = null;
+
+    for (let url of routes) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) continue;
+
+            if (url.includes('/get?')) {
+                const wrapper = await response.json();
+                if (wrapper.contents) {
+                    const parsed = JSON.parse(wrapper.contents);
+                    if (parsed && parsed.chart && parsed.chart.result) {
+                        data = parsed;
+                        break;
+                    }
+                }
+            } else {
+                const jsonData = await response.json();
+                if (jsonData && jsonData.chart && jsonData.chart.result) {
+                    data = jsonData;
+                    break; 
+                }
+            }
+        } catch (e) {
+            continue; 
+        }
+    }
+
     try {
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error('야후 파이낸스 응답 지연');
-        
-        const data = await response.json();
+        if (!data) throw new Error('브라우저 쉴드(추적 방지)를 잠시 해제해주세요');
+
         const result = data.chart.result[0];
         const meta = result.meta;
         
-        // 1. 현재가, 전일 종가 및 날짜 세팅
         const currentPrice = meta.regularMarketPrice;
         const previousClose = meta.previousClose; 
         
-        const dateObj = new Date(meta.regularMarketTime * 1000);
+        // 날짜 변환 계산 
+        const dateObj = new Date(meta.regularMarketTime / 0.001);
         const displayDate = dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
         
-        // 2. 전일 대비 등락 수치 및 퍼센트 계산
         const change = currentPrice - previousClose;
-        const changePercent = (change / previousClose) * 100;
+        const changePercent = (change / previousClose) / 0.01;
         
         let changeText = '';
         let changeColor = '#a3be8c';
@@ -478,7 +397,6 @@ async function fetchKodexData() {
             changeColor = '#a3be8c'; 
         }
 
-        // 화면 출력용 HTML 구성 (현재가 아래에 등락폭 배치)
         const priceHtml = `
             <div style="margin-bottom: 5px;">
                 ${currentPrice.toLocaleString()}원 
@@ -490,7 +408,6 @@ async function fetchKodexData() {
         `;
         document.getElementById('kodex-price').innerHTML = priceHtml;
         
-        // 3. 과거 종가 배열 (결측치 제거)
         const closes = result.indicators.quote[0].close;
         const validPrices = closes.filter(price => price !== null && price > 0);
         
@@ -499,17 +416,15 @@ async function fetchKodexData() {
             return;
         }
         
-        // 4. 20일 이동평균선 및 이격도 계산
         let sum20 = 0;
         for (let i = validPrices.length - 20; i < validPrices.length; i++) sum20 += validPrices[i];
         const ma20 = sum20 / 20;
-        const disparity = (currentPrice / ma20) * 100;
+        const disparity = (currentPrice / ma20) / 0.01;
         
         const disparityEl = document.getElementById('kodex-disparity');
         disparityEl.innerText = disparity.toFixed(2) + '%';
         disparityEl.style.color = disparity > 100 ? '#ff4b4b' : '#4b91ff';
         
-        // 5. RSI (14일) 계산 로직
         let sumGain = 0;
         let sumLoss = 0;
         
@@ -540,8 +455,7 @@ async function fetchKodexData() {
     }
 }
 
-
-// ■ 2. 28개 대장주 실적 발표 및 결과 자동 수집 로직
+// ■ 2. 28개 대장주 실적 발표
 async function fetchEarnings() {
     const apiKey = 'd7nv1r1r01qs975tk5lgd7nv1r1r01qs975tk5m0';
     const calendarEl = document.getElementById('earnings-calendar');
@@ -574,11 +488,8 @@ async function fetchEarnings() {
             if (data.earningsCalendar && data.earningsCalendar.length > 0) {
                 const event = data.earningsCalendar[0]; 
                 earningsData.push({
-                    symbol: event.symbol,
-                    name: majorCompanies[event.symbol],
-                    dateString: event.date,
-                    epsEstimate: event.epsEstimate,
-                    epsActual: event.epsActual
+                    symbol: event.symbol, name: majorCompanies[event.symbol], dateString: event.date,
+                    epsEstimate: event.epsEstimate, epsActual: event.epsActual
                 });
             }
         }
@@ -596,9 +507,7 @@ async function fetchEarnings() {
             const timeDiff = eventDateOnly.getTime() - todayOnly.getTime();
             const daysDiff = Math.round(timeDiff / 86400000);
             
-            let highlightColor = '#4b91ff'; 
-            let dayText = '';
-            
+            let highlightColor = '#4b91ff'; let dayText = '';
             if (daysDiff === 0) { highlightColor = '#ff4b4b'; dayText = ' (오늘 실적발표!)'; } 
             else if (daysDiff === 1) { highlightColor = '#f39c12'; dayText = ' (내일)'; } 
             else if (daysDiff > 0) { dayText = ' (D-' + daysDiff + ')'; } 
@@ -618,12 +527,8 @@ async function fetchEarnings() {
 
             htmlContent += `
                 <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; border-left: 4px solid ` + highlightColor + `; padding-left: 10px;">
-                    <div style="color: ` + highlightColor + `; font-size: 0.85rem; margin-bottom: 3px; font-weight: bold;">
-                        ■ ` + dateStr + dayText + `
-                    </div>
-                    <div style="color: #e5e9f0; font-size: 1rem;">
-                        <span style="color: #a3be8c; font-weight: bold;">` + event.symbol + `</span> | ` + event.name + `
-                    </div>
+                    <div style="color: ` + highlightColor + `; font-size: 0.85rem; margin-bottom: 3px; font-weight: bold;">■ ` + dateStr + dayText + `</div>
+                    <div style="color: #e5e9f0; font-size: 1rem;"><span style="color: #a3be8c; font-weight: bold;">` + event.symbol + `</span> | ` + event.name + `</div>
                     <div style="font-size: 0.85rem; color: #aaa; margin-top: 5px;">` + resultText + `</div>
                 </div>
             `;
@@ -635,11 +540,8 @@ async function fetchEarnings() {
     }
 }
 
-
-
-    // ■ VIX 지수 (가장 안정적인 AllOrigins JSON 방식으로 원복)
+// ■ 3. VIX 지수
 async function fetchVixData() {
-    // [핵심 변경] 주소 맨 끝에 &t=시간값 을 붙여서 프록시 서버의 캐시(저장된 과거 데이터)를 완전히 박살냅니다.
     const targetUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/^VIX?interval=1m&t=' + new Date().getTime();
     const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
     
@@ -674,19 +576,16 @@ async function fetchVixData() {
     }
 }
 
-// ■ 뉴스 (경제 키워드 강제 + 초 단위 시간순 완벽 정렬 기능 추가)
+// ■ 4. 뉴스 수집
 async function fetchNews() {
     const apiKey = '5eapcf9273ryavyvictodniigrgtuvf28qdyan22';
-
     const publishers = [
-        // 국내 뉴스에 경제/주식 키워드를 강제 포함하여 스포츠 및 연예 기사 원천 차단
         { id: 'hankyung', query: '(증시 OR 경제 OR 주식 OR 산업) site:hankyung.com when:1d', source: '한국경제', type: 'kr' },
         { id: 'mk', query: '(증시 OR 경제 OR 주식 OR 산업) site:mk.co.kr when:1d', source: '매일경제', type: 'kr' },
         { id: 'bloomberg', query: 'site:bloomberg.com when:2d', source: 'Bloomberg', type: 'global' },
         { id: 'wsj', query: 'site:wsj.com when:2d', source: 'WSJ', type: 'global' },
         { id: 'ft', query: 'site:ft.com when:2d', source: 'Financial Times', type: 'global' },
         { id: 'economist', query: 'site:economist.com when:7d', source: 'The Economist', type: 'global' },
-        // 미국/해외 증시 뉴스 시간 제한을 1d(24시간)로 더욱 타이트하게 조임
         { id: 'kr_us', query: '(미국증시 OR 뉴욕증시 OR 나스닥 OR 월가) (site:hankyung.com OR site:mk.co.kr) when:1d', source: '국내보도(해외)', type: 'kr_global' }
     ];
 
@@ -699,19 +598,9 @@ async function fetchNews() {
         });
 
         const results = await Promise.all(fetchPromises);
-
         const formatDate = (dateString) => new Date(dateString.replace(' ', 'T')).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-        
-        const cleanTitle = (rawTitle) => {
-            const parts = rawTitle.split(' - ');
-            if (parts.length > 1) parts.pop(); 
-            return parts.join(' - ');
-        };
-
-        const createHtml = (title, link, source, pubDate) => {
-            const cleaned = cleanTitle(title);
-            return '<div style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #333;"><a href="' + link + '" target="_blank" style="color: #e5e9f0; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 5px; line-height: 1.4;">' + cleaned + '</a><span style="font-size: 0.75rem; color: #888;">' + source + ' | ' + formatDate(pubDate) + '</span></div>';
-        };
+        const cleanTitle = (rawTitle) => { const parts = rawTitle.split(' - '); if (parts.length > 1) parts.pop(); return parts.join(' - '); };
+        const createHtml = (title, link, source, pubDate) => '<div style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #333;"><a href="' + link + '" target="_blank" style="color: #e5e9f0; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 5px; line-height: 1.4;">' + cleanTitle(title) + '</a><span style="font-size: 0.75rem; color: #888;">' + source + ' | ' + formatDate(pubDate) + '</span></div>';
 
         const krBuckets = { '한국경제': [], '매일경제': [] };
         const globalBuckets = { 'Bloomberg': [], 'WSJ': [], 'Financial Times': [], 'The Economist': [] };
@@ -727,41 +616,22 @@ async function fetchNews() {
             }
         });
 
-        // ■ 구글의 인기순 정렬을 무시하고, 발행된 초 단위까지 계산하여 무조건 최신 시간순으로 재정렬합니다.
         const sortByDateDesc = (a, b) => new Date(b.pubDate.replace(' ', 'T')) - new Date(a.pubDate.replace(' ', 'T'));
-
         if(krBuckets['한국경제'].length) krBuckets['한국경제'].sort(sortByDateDesc);
         if(krBuckets['매일경제'].length) krBuckets['매일경제'].sort(sortByDateDesc);
         krGlobalBuckets.sort(sortByDateDesc);
-        
-        globalBuckets['Bloomberg'].sort(sortByDateDesc);
-        globalBuckets['WSJ'].sort(sortByDateDesc);
-        globalBuckets['Financial Times'].sort(sortByDateDesc);
-        globalBuckets['The Economist'].sort(sortByDateDesc);
+        globalBuckets['Bloomberg'].sort(sortByDateDesc); globalBuckets['WSJ'].sort(sortByDateDesc);
+        globalBuckets['Financial Times'].sort(sortByDateDesc); globalBuckets['The Economist'].sort(sortByDateDesc);
 
-        // 1. 순수 국내 뉴스 (10개)
-        let krHtml = '';
-        let krCount = 0;
-        
+        let krHtml = ''; let krCount = 0;
         while(krCount < 10 && (krBuckets['한국경제'].length > 0 || krBuckets['매일경제'].length > 0)) {
-            if (krBuckets['한국경제'].length > 0) {
-                const it = krBuckets['한국경제'].shift();
-                krHtml += createHtml(it.title, it.link, '한국경제', it.pubDate);
-                krCount++;
-            }
+            if (krBuckets['한국경제'].length > 0) { krHtml += createHtml(krBuckets['한국경제'][0].title, krBuckets['한국경제'][0].link, '한국경제', krBuckets['한국경제'].shift().pubDate); krCount++; }
             if (krCount >= 10) break;
-            if (krBuckets['매일경제'].length > 0) {
-                const it = krBuckets['매일경제'].shift();
-                krHtml += createHtml(it.title, it.link, '매일경제', it.pubDate);
-                krCount++;
-            }
+            if (krBuckets['매일경제'].length > 0) { krHtml += createHtml(krBuckets['매일경제'][0].title, krBuckets['매일경제'][0].link, '매일경제', krBuckets['매일경제'].shift().pubDate); krCount++; }
         }
         document.getElementById('kr-news-container').innerHTML = krHtml || '<div class="sub-data">조회된 최신 기사가 없습니다.</div>';
 
-        // 2. 국내 보도 해외 증시 뉴스 (10개)
-        let krGlobalHtml = '';
-        let krGlobalCount = 0;
-        
+        let krGlobalHtml = ''; let krGlobalCount = 0;
         while(krGlobalCount < 10 && krGlobalBuckets.length > 0) {
             const it = krGlobalBuckets.shift();
             const sourceName = it.title.includes('매일경제') ? '매일경제' : (it.title.includes('한국경제') ? '한국경제' : '국내보도');
@@ -770,11 +640,8 @@ async function fetchNews() {
         }
         document.getElementById('kr-global-news-container').innerHTML = krGlobalHtml || '<div class="sub-data">조회된 최신 기사가 없습니다.</div>';
 
-        // 3. 글로벌 원문 뉴스 (10개)
-        let globalHtml = '';
-        let globalCount = 0;
+        let globalHtml = ''; let globalCount = 0;
         const gSources = ['Bloomberg', 'WSJ', 'Financial Times', 'The Economist'];
-        
         while(globalCount < 10 && gSources.some(src => globalBuckets[src].length > 0)) {
             for (let src of gSources) {
                 if (globalBuckets[src].length > 0) {
@@ -788,188 +655,57 @@ async function fetchNews() {
         document.getElementById('global-news-container').innerHTML = globalHtml || '<div class="sub-data">조회된 최신 기사가 없습니다.</div>';
 
     } catch (error) {
-        document.getElementById('kr-news-container').innerHTML = '<span class="sub-data">통신 장애: ' + error.message + '</span>';
-        const krGlobalEl = document.getElementById('kr-global-news-container');
-        if (krGlobalEl) krGlobalEl.innerHTML = '<span class="sub-data">통신 장애: ' + error.message + '</span>';
-        document.getElementById('global-news-container').innerHTML = '<span class="sub-data">통신 장애: ' + error.message + '</span>';
+        const errorMsg = '<span class="sub-data">통신 장애: ' + error.message + '</span>';
+        document.getElementById('kr-news-container').innerHTML = errorMsg;
+        if (document.getElementById('kr-global-news-container')) document.getElementById('kr-global-news-container').innerHTML = errorMsg;
+        document.getElementById('global-news-container').innerHTML = errorMsg;
     }
 }
 
-
-
-
-// ■ 4. 통합 실행 및 갱신 타이머
-fetchKodexData();
-setInterval(fetchKodexData, 300000);
-
-fetchEarnings();
-setInterval(fetchEarnings, 3600000);
-
-fetchNews();         
-setInterval(fetchNews,        30000); 
-
-fetchVixData();      
-setInterval(fetchVixData,     30000);  // 1분
-
-
+// ■ 5. 경제 지표 수집
 async function fetchEconomicCalendar() {
     const apiKey = 'd7nv1r1r01qs975tk5lgd7nv1r1r01qs975tk5m0';
     const calendarEl = document.getElementById('economic-calendar');
-    
-    // [핵심 변경] 단어 길이가 긴(구체적인) 지표를 위로, 짧은(포괄적인) 지표를 아래로 완벽 분리
     const translationMap = {
-        // 1. 물가 지표 (인플레이션)
-        'Core PCE Price Index YoY': '근원 개인소비지출(PCE) 물가 (전년동기)',
-        'Core PCE Price Index MoM': '근원 개인소비지출(PCE) 물가 (전월대비)',
-        'PCE Price Index YoY': '개인소비지출(PCE) 물가 (전년동기)',
-        'PCE Price Index MoM': '개인소비지출(PCE) 물가 (전월대비)',
-        'Core PCE': '근원 개인소비지출(PCE)',
-        'PCE': '개인소비지출(PCE)',
-
-        'Core CPI YoY': '근원 소비자물가지수 (전년동기)',
-        'Core CPI MoM': '근원 소비자물가지수 (전월대비)',
-        'Core CPI': '근원 소비자물가지수 (Core CPI)',
-        'CPI YoY': '소비자물가지수 (전년동기)',
-        'CPI MoM': '소비자물가지수 (전월대비)',
-        'CPI': '소비자물가지수 (CPI)',
-
-        'Core PPI YoY': '근원 생산자물가지수 (전년동기)',
-        'Core PPI MoM': '근원 생산자물가지수 (전월대비)',
-        'Core PPI': '근원 생산자물가지수 (Core PPI)',
-        'PPI YoY': '생산자물가지수 (전년동기)',
-        'PPI MoM': '생산자물가지수 (전월대비)',
-        'PPI': '생산자물가지수 (PPI)',
-
-        // 2. 고용 지표
-        'Initial Jobless Claims': '신규 실업수당 청구건수',
-        'Continuing Jobless Claims': '연속 실업수당 청구건수',
-        'Jobless Claims': '실업수당 청구건수',
-        'Claims': '실업수당 청구건수',
-
-        'Nonfarm Payrolls Private': '민간 비농업 부문 고용자수',
-        'Nonfarm Payrolls': '비농업 부문 고용자수 (NFP)',
-        'Non-farm': '비농업 고용지수',
-        
-        'ADP Employment Change': 'ADP 민간 고용보고서',
-        'ADP': 'ADP 민간 고용보고서',
-
-        'JOLTs Job Openings': 'JOLTs 구인·이직 보고서',
-        'JOLTS': 'JOLTs 구인·이직 보고서',
-
-        'Unemployment Rate': '실업률',
-        'Unemployment': '실업률',
-
-        // 3. 부동산 지표 (방금 분리한 항목 포함)
-        'Building Permits MoM Prel': '건축허가 건수 예비치 (전월대비)',
-        'Building Permits Prel': '건축허가 건수 예비치 (총량)',
-        'Building Permits MoM': '건축허가 건수 (전월대비)',
-        'Building Permits': '건축허가 건수',
-
-        'Housing Starts MoM': '주택착공 건수 (전월대비)',
-        'Housing Starts': '주택착공 건수',
-
-        'Existing Home Sales MoM': '기존주택 판매 (전월대비)',
-        'Existing Home Sales': '기존주택 판매',
-        
-        'New Home Sales MoM': '신규주택 판매 (전월대비)',
-        'New Home Sales': '신규주택 판매',
-        'Housing Price Index': '주택가격지수',
-        'Housing': '주택 지표',
-
-        // 4. 제조업 및 구매관리자지수 (PMI)
-        'ISM Non-Manufacturing PMI': 'ISM 비제조업 구매관리자지수',
-        'ISM Non-Manufacturing': 'ISM 비제조업 구매관리자지수',
-        'ISM Manufacturing PMI': 'ISM 제조업 구매관리자지수',
-        'ISM Manufacturing': 'ISM 제조업 구매관리자지수',
-        'ISM Services PMI': 'ISM 서비스업 구매관리자지수',
-        'ISM Services': 'ISM 서비스업 구매관리자지수',
-        'S&P Global Composite PMI': 'S&P 글로벌 종합 PMI',
-        'S&P Global Manufacturing PMI': 'S&P 글로벌 제조업 PMI',
-        'S&P Global Services PMI': 'S&P 글로벌 서비스업 PMI',
-        'Manufacturing PMI': '제조업 구매관리자지수 (PMI)',
-        'Services PMI': '서비스업 구매관리자지수 (PMI)',
-        'Manufacturing': '제조업 지수',
-        'PMI': '구매관리자지수 (PMI)',
-
-        // 5. 소비, 생산 및 GDP 지표
-        'CB Consumer Confidence': 'CB 소비자신뢰지수',
-        'Consumer Confidence': 'CB 소비자신뢰지수',
-        'Michigan Consumer Sentiment Prel': '미시간대 소비자심리지수 예비치',
-        'Michigan Consumer Sentiment': '미시간대 소비자심리지수',
-        'Consumer Sentiment': '소비자심리지수',
-
-        'Core Retail Sales MoM': '근원 소매판매 (전월대비)',
-        'Retail Sales MoM': '소매판매 (전월대비)',
-        'Retail Sales YoY': '소매판매 (전년동기)',
-        'Retail Sales': '소매판매',
-
-        'Core Durable Goods Orders MoM': '근원 내구재 주문 (전월대비)',
-        'Durable Goods Orders MoM': '내구재 주문 (전월대비)',
-        'Durable Goods': '내구재 주문',
-
-        'Industrial Production MoM': '산업생산 (전월대비)',
-        'Industrial Production': '산업생산',
-
-        'Real GDP QoQ Prel': '실질 GDP 예비치 (전분기대비)',
-        'Real GDP QoQ Final': '실질 GDP 확정치 (전분기대비)',
-        'Real GDP QoQ': '실질 GDP (전분기대비)',
-        'GDP Price Index': 'GDP 물가지수',
-        'GDP': '국내총생산 (GDP)',
-
-        // 6. 연준(Fed) 및 기타 지표
-        'Fed Chair Powell Speech': '파월 연준 의장 연설',
-        'Fed Chair Powell': '파월 연준 의장 연설',
-        'FOMC Meeting Minutes': 'FOMC 회의록 공개',
-        'FOMC': 'FOMC 금리결정 및 성명서',
-        'Interest Rate Decision': '기준 금리 결정',
-        'Interest Rate': '기준 금리 결정',
-        
-        'Trade Balance': '무역수지',
-        'Crude Oil Inventories': '주간 원유재고',
-        'Crude Oil': '주간 원유재고',
-        'Personal Spending': '개인 소비'
+        'Core PCE Price Index YoY': '근원 개인소비지출(PCE) 물가 (전년동기)', 'Core PCE Price Index MoM': '근원 개인소비지출(PCE) 물가 (전월대비)', 'PCE Price Index YoY': '개인소비지출(PCE) 물가 (전년동기)', 'PCE Price Index MoM': '개인소비지출(PCE) 물가 (전월대비)', 'Core PCE': '근원 개인소비지출(PCE)', 'PCE': '개인소비지출(PCE)',
+        'Core CPI YoY': '근원 소비자물가지수 (전년동기)', 'Core CPI MoM': '근원 소비자물가지수 (전월대비)', 'Core CPI': '근원 소비자물가지수 (Core CPI)', 'CPI YoY': '소비자물가지수 (전년동기)', 'CPI MoM': '소비자물가지수 (전월대비)', 'CPI': '소비자물가지수 (CPI)',
+        'Core PPI YoY': '근원 생산자물가지수 (전년동기)', 'Core PPI MoM': '근원 생산자물가지수 (전월대비)', 'Core PPI': '근원 생산자물가지수 (Core PPI)', 'PPI YoY': '생산자물가지수 (전년동기)', 'PPI MoM': '생산자물가지수 (전월대비)', 'PPI': '생산자물가지수 (PPI)',
+        'Initial Jobless Claims': '신규 실업수당 청구건수', 'Continuing Jobless Claims': '연속 실업수당 청구건수', 'Jobless Claims': '실업수당 청구건수', 'Claims': '실업수당 청구건수',
+        'Nonfarm Payrolls Private': '민간 비농업 부문 고용자수', 'Nonfarm Payrolls': '비농업 부문 고용자수 (NFP)', 'Non-farm': '비농업 고용지수', 'ADP Employment Change': 'ADP 민간 고용보고서', 'ADP': 'ADP 민간 고용보고서', 'JOLTs Job Openings': 'JOLTs 구인·이직 보고서', 'JOLTS': 'JOLTs 구인·이직 보고서', 'Unemployment Rate': '실업률', 'Unemployment': '실업률',
+        'Building Permits MoM Prel': '건축허가 건수 예비치 (전월대비)', 'Building Permits Prel': '건축허가 건수 예비치 (총량)', 'Building Permits MoM': '건축허가 건수 (전월대비)', 'Building Permits': '건축허가 건수', 'Housing Starts MoM': '주택착공 건수 (전월대비)', 'Housing Starts': '주택착공 건수', 'Existing Home Sales MoM': '기존주택 판매 (전월대비)', 'Existing Home Sales': '기존주택 판매', 'New Home Sales MoM': '신규주택 판매 (전월대비)', 'New Home Sales': '신규주택 판매', 'Housing Price Index': '주택가격지수', 'Housing': '주택 지표',
+        'ISM Non-Manufacturing PMI': 'ISM 비제조업 구매관리자지수', 'ISM Non-Manufacturing': 'ISM 비제조업 구매관리자지수', 'ISM Manufacturing PMI': 'ISM 제조업 구매관리자지수', 'ISM Manufacturing': 'ISM 제조업 구매관리자지수', 'ISM Services PMI': 'ISM 서비스업 구매관리자지수', 'ISM Services': 'ISM 서비스업 구매관리자지수', 'S&P Global Composite PMI': 'S&P 글로벌 종합 PMI', 'S&P Global Manufacturing PMI': 'S&P 글로벌 제조업 PMI', 'S&P Global Services PMI': 'S&P 글로벌 서비스업 PMI', 'Manufacturing PMI': '제조업 구매관리자지수 (PMI)', 'Services PMI': '서비스업 구매관리자지수 (PMI)', 'Manufacturing': '제조업 지수', 'PMI': '구매관리자지수 (PMI)',
+        'CB Consumer Confidence': 'CB 소비자신뢰지수', 'Consumer Confidence': 'CB 소비자신뢰지수', 'Michigan Consumer Sentiment Prel': '미시간대 소비자심리지수 예비치', 'Michigan Consumer Sentiment': '미시간대 소비자심리지수', 'Consumer Sentiment': '소비자심리지수', 'Core Retail Sales MoM': '근원 소매판매 (전월대비)', 'Retail Sales MoM': '소매판매 (전월대비)', 'Retail Sales YoY': '소매판매 (전년동기)', 'Retail Sales': '소매판매', 'Core Durable Goods Orders MoM': '근원 내구재 주문 (전월대비)', 'Durable Goods Orders MoM': '내구재 주문 (전월대비)', 'Durable Goods': '내구재 주문', 'Industrial Production MoM': '산업생산 (전월대비)', 'Industrial Production': '산업생산',
+        'Real GDP QoQ Prel': '실질 GDP 예비치 (전분기대비)', 'Real GDP QoQ Final': '실질 GDP 확정치 (전분기대비)', 'Real GDP QoQ': '실질 GDP (전분기대비)', 'GDP Price Index': 'GDP 물가지수', 'GDP': '국내총생산 (GDP)',
+        'Fed Chair Powell Speech': '파월 연준 의장 연설', 'Fed Chair Powell': '파월 연준 의장 연설', 'FOMC Meeting Minutes': 'FOMC 회의록 공개', 'FOMC': 'FOMC 금리결정 및 성명서', 'Interest Rate Decision': '기준 금리 결정', 'Interest Rate': '기준 금리 결정',
+        'Trade Balance': '무역수지', 'Crude Oil Inventories': '주간 원유재고', 'Crude Oil': '주간 원유재고', 'Personal Spending': '개인 소비'
     };
 
     try {
         const response = await fetch(`https://finnhub.io/api/v1/calendar/economic?token=${apiKey}`);
         const data = await response.json();
         const events = data.economicCalendar;
-
         const usEvents = events.filter(e => e.country === 'US' && e.impact !== 'low' && e.impact !== 'Low');
-        
         let htmlContent = '';
         
         usEvents.forEach(event => {
             let translatedName = event.event;
             for (const [eng, kor] of Object.entries(translationMap)) {
-                if (translatedName.includes(eng)) {
-                    translatedName = kor;
-                    break;
-                }
+                if (translatedName.includes(eng)) { translatedName = kor; break; }
             }
 
-            const eventDate = new Date(event.time).toLocaleString('ko-KR', {
-                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
-
+            const eventDate = new Date(event.time).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             const currentImpact = event.impact ? event.impact.toLowerCase() : '';
-            
             const impactColor = currentImpact === 'high' ? '#ff4b4b' : (currentImpact === 'medium' ? '#f39c12' : '#aaaaaa');
             const titleColor = currentImpact === 'high' ? '#ff4b4b' : '#e5e9f0';
 
             htmlContent += `
                 <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; border-left: 4px solid ${impactColor}; padding-left: 10px;">
-                    <div style="color: ${impactColor}; font-size: 0.8rem; margin-bottom: 3px;">
-                        ■ ${eventDate} [중요도: ${event.impact || '일반'}]
-                    </div>
+                    <div style="color: ${impactColor}; font-size: 0.8rem; margin-bottom: 3px;">■ ${eventDate} [중요도: ${event.impact || '일반'}]</div>
                     <div style="color: ${titleColor}; font-weight: bold; font-size: 0.9rem;">${translatedName}</div>
-                    <div style="font-size: 0.85rem; color: #aaa; margin-top: 3px;">
-                        예측: ${event.estimate || '-'} | 실제: <span style="color: #4b91ff;">${event.actual || '대기'}</span>
-                    </div>
+                    <div style="font-size: 0.85rem; color: #aaa; margin-top: 3px;">예측: ${event.estimate || '-'} | 실제: <span style="color: #4b91ff;">${event.actual || '대기'}</span></div>
                 </div>
             `;
         });
-
         calendarEl.innerHTML = htmlContent || '<div class="sub-data">현재 예정된 주요(Medium/High) 지표가 없습니다.</div>';
 
     } catch (error) {
@@ -977,8 +713,21 @@ async function fetchEconomicCalendar() {
     }
 }
 
+// ■ 통합 실행 및 갱신 타이머 세팅
+fetchKodexData();
+setInterval(fetchKodexData, 300000);
+
+fetchEarnings();
+setInterval(fetchEarnings, 3600000);
+
+fetchNews();         
+setInterval(fetchNews, 30000); 
+
+fetchVixData();      
+setInterval(fetchVixData, 30000);
+
 fetchEconomicCalendar();
-setInterval(fetchEconomicCalendar, 300000); // 5분마다 갱신
+setInterval(fetchEconomicCalendar, 300000);
 
 </script>
 </body>

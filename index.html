@@ -757,26 +757,14 @@ setInterval(fetchNews,        30000);
 fetchVixData();      
 setInterval(fetchVixData,     60000);  // 1분
 
+
 async function fetchEconomicCalendar() {
     const apiKey = 'd7nv1r1r01qs975tk5lgd7nv1r1r01qs975tk5m0';
     const calendarEl = document.getElementById('economic-calendar');
     
-    // 번역 사전 확장 (다양한 지표 대응)
     const translationMap = {
         'CPI': '소비자물가지수 (CPI)',
-        'PPI': '생산자물가지수 (PPI)',
-        'FOMC': '연준 금리 결정/연설',
-        'Non-farm': '비농업 고용지수',
-        'Unemployment': '실업률',
-        'GDP': '국내총생산 (GDP)',
-        'Retail Sales': '소매판매',
-        'Claims': '실업수당 청구건수',
-        'Manufacturing': '제조업 지수',
-        'Housing': '주택 지표',
-        'Consumer Sentiment': '소비자 심리지수',
-        'Durable Goods': '내구재 주문',
-        'Personal Spending': '개인 소비',
-        'Interest Rate': '금리'
+        'PPI': '생산자물가지수 (PPI)'
     };
 
     try {
@@ -784,7 +772,6 @@ async function fetchEconomicCalendar() {
         const data = await response.json();
         const events = data.economicCalendar;
 
-        // [핵심 변경 사항] 미국(US) 데이터이면서, 중요도가 'low' 또는 'Low'가 아닌 것들만 엄선하여 추출합니다.
         const usEvents = events.filter(e => e.country === 'US' && e.impact !== 'low' && e.impact !== 'Low');
         
         let htmlContent = '';
@@ -802,15 +789,18 @@ async function fetchEconomicCalendar() {
                 month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
             });
 
-            // 중요도(impact)에 따라 바 색상을 다르게 표시
-            const impactColor = event.impact === 'High' ? '#ff4b4b' : (event.impact === 'Medium' ? '#f39c12' : '#aaaaaa');
+            // 데이터가 소문자로 들어오더라도 오류가 나지 않도록 소문자로 통일하여 검사하는 로직을 추가했습니다.
+            const currentImpact = event.impact ? event.impact.toLowerCase() : '';
+            
+            const impactColor = currentImpact === 'high' ? '#ff4b4b' : (currentImpact === 'medium' ? '#f39c12' : '#aaaaaa');
+            const titleColor = currentImpact === 'high' ? '#ff4b4b' : '#e5e9f0';
 
             htmlContent += `
                 <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; border-left: 4px solid ${impactColor}; padding-left: 10px;">
                     <div style="color: ${impactColor}; font-size: 0.8rem; margin-bottom: 3px;">
                         ■ ${eventDate} [중요도: ${event.impact || '일반'}]
                     </div>
-                    <div style="color: #e5e9f0; font-weight: bold; font-size: 0.9rem;">${translatedName}</div>
+                    <div style="color: ${titleColor}; font-weight: bold; font-size: 0.9rem;">${translatedName}</div>
                     <div style="font-size: 0.85rem; color: #aaa; margin-top: 3px;">
                         예측: ${event.estimate || '-'} | 실제: <span style="color: #4b91ff;">${event.actual || '대기'}</span>
                     </div>
@@ -818,7 +808,6 @@ async function fetchEconomicCalendar() {
             `;
         });
 
-        // low 지표가 다 빠지고 Medium/High 지표마저 없을 경우를 대비한 문구 변경
         calendarEl.innerHTML = htmlContent || '<div class="sub-data">현재 예정된 주요(Medium/High) 지표가 없습니다.</div>';
 
     } catch (error) {
@@ -827,7 +816,7 @@ async function fetchEconomicCalendar() {
 }
 
 fetchEconomicCalendar();
-setInterval(fetchEconomicCalendar, 300000); // 5분마다 갱신
+setInterval(fetchEconomicCalendar, 300000);
 
 
 </script>
